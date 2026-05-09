@@ -325,20 +325,18 @@
                 <path d="M1 29 L14 18" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
                 <path d="M39 29 L26 18" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
             </svg>
-            <div class="env-header-title">信 封 投 递</div>
-            <div class="env-header-subtitle">Letters · Correspondence</div>
+            <div class="env-header-title">留 言 板</div>
+            <div class="env-header-subtitle">Message Board</div>
         </div>
 
         <div class="env-body">
             <div class="env-tab-bar">
                 <button class="env-tab-btn active" id="env-tab-outbox" onclick="switchEnvTab('outbox')">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:4px;"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>寄出的信
-                    <span id="env-outbox-badge" class="env-badge" style="display:none;"></span>
+                    我的留言
                 </button>
                 <button class="env-tab-btn" id="env-tab-inbox" onclick="switchEnvTab('inbox')">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:4px;"><path d="M22 13V19a2 2 0 01-2 2H4a2 2 0 01-2-2v-6"/><polyline points="15 3 21 3 21 9"/><line x1="21" y1="3" x2="10" y2="14"/></svg>收到的信
-                    <span id="env-inbox-badge" class="env-badge" style="display:none;"></span>
-                </button>
+                    收到的留言
+                </button>            
             </div>
 
             <div id="env-outbox-section">
@@ -353,7 +351,7 @@
                 <div class="env-compose-paper">
                     <div class="env-compose-heading">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                        <span id="env-compose-title">写一封信</span>
+                        <span id="env-compose-title">写下留言</span>
                     </div>
                     <textarea id="envelope-input" placeholder="亲爱的，&#10;&#10;今天想跟你说..."></textarea>
                 </div>
@@ -377,7 +375,7 @@
         <div class="env-send-area" id="env-main-close-btn">
             <button class="env-write-btn" id="new-envelope-btn" onclick="openNewEnvelopeForm()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                提笔写信
+                提笔留言
             </button>
             <button class="env-close-btn" id="cancel-envelope">关闭</button>
         </div>
@@ -1068,11 +1066,19 @@
                                 <span class="cs-slider-val" id="auto-send-value">5分钟</span>
                             </div>
                         </div>
-                        <div class="setting-pill-row" id="partner-auto-board-toggle">
-                            <span class="setting-pill-icon"><i class="fas fa-pen-fancy"></i></span>
-                            <span class="setting-pill-label">对方主动写留言板 <span style="font-size:11px;color:var(--text-secondary);font-weight:400;">开启后对方会随机发起新留言</span></span>
+                        <!-- 主动写入留言板 -->
+                        <div class="setting-pill-row" id="auto-envelope-toggle">
+                            <span class="setting-pill-icon"><i class="fas fa-sticky-note"></i></span>
+                            <span class="setting-pill-label">主动写入留言板</span>
                             <div class="setting-pill-switch"><div class="setting-pill-knob"></div></div>
                         </div>
+                        <div id="auto-envelope-control" style="display:none;">
+                            <div class="cs-slider-row">
+                                <span class="cs-slider-label">间隔(小时)</span>
+                                <input type="range" min="1" max="12" step="0.5" value="5" class="font-size-slider" id="auto-envelope-slider">
+                                <span class="cs-slider-val" id="auto-envelope-value">5h</span>
+                            </div>
+                        </div>                        
                     </div>
 
                     <p class="cs-group-label" style="margin-top:4px;">消息节奏</p>
@@ -1333,11 +1339,8 @@
                     <div class="settings-item" id="mood-function">
                         <i class="fas fa-calendar-day"></i><span>心晴手账</span>
                     </div>
-                    <div class="settings-item" id="envelope-send-function">
-                        <i class="fas fa-envelope"></i><span>信封投递</span>
-                    </div>
                     <div class="settings-item" id="envelope-function">
-                        <i class="fa-solid fa-thumbtack"></i><span>留言板</span>
+                        <i class="fas fa-envelope"></i><span>信封投递</span>
                     </div>
                 </div>
             </div>
@@ -1537,110 +1540,6 @@
     </div>
 
     <div id="lenormand-modal" style="display:none;"></div>
-
-<!-- 留言板列表（新样式） -->
-<div id="envelope-board-modal" class="modal">
-    <div class="modal-content" style="max-height:92vh; padding:0; overflow:hidden; background:transparent;">
-        <div class="board-wrapper" style="background: var(--secondary-bg); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; max-height: 88vh;">
-            <!-- 头部的信封风格 -->
-            <div class="env-header-flap">
-                <svg class="env-header-icon" width="40" height="30" viewBox="0 0 40 30" fill="none">
-                    <rect x="1" y="7" width="38" height="22" rx="3" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
-                    <path d="M1 9 L20 20 L39 9" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" fill="none"/>
-                    <path d="M1 29 L14 18" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
-                    <path d="M39 29 L26 18" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
-                </svg>
-                <div class="env-header-title">留言板</div>
-                <div class="env-header-subtitle">MESSAGE BOARD · WALL</div>
-            </div>
-
-            <div class="board-body" style="flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
-                <!-- 标签切换区域 -->
-                <div id="board-tab-area" style="display: flex; gap: 8px; margin-bottom: 10px;"></div>
-
-                <!-- 列表内容区域 -->
-                <div id="board-list-body" style="flex: 1; min-height: 0;"></div>
-            </div>
-
-            <div class="board-footer" style="padding: 12px 16px; border-top: 1px solid var(--border-color);">
-                <div class="modal-buttons" style="display: flex; gap: 10px;">
-                    <button class="modal-btn modal-btn-secondary" id="back-advanced" onclick="(function(){hideModal(document.getElementById('envelope-board-modal'));showModal(document.getElementById('advanced-modal'))})()">
-                        <i class="fas fa-arrow-left"></i> 返回
-                    </button>
-                    <button class="modal-btn modal-btn-primary" id="board-new-post-btn" style="flex: 1; justify-content:center;"><i class="fas fa-plus"></i> 提笔留言</button>
-                    <button class="modal-btn modal-btn-secondary" id="close-custom-replies">关闭</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 留言板详情 -->
-<div id="board-detail-modal" class="modal">
-    <div class="modal-content" id="board-v2-detail-container">
-        <div class="board-detail-wrapper">
-            <div class="board-detail-header">
-                <button class="board-detail-back" id="board-detail-back-btn"><i class="fas fa-arrow-left"></i></button>
-                <div class="board-detail-title">留言详情</div>
-                <div class="board-detail-actions">
-                <button class="board-detail-action-btn" id="board-global-edit-btn" title="全部编辑"><i class="fas fa-pen"></i></button>
-                <button class="board-detail-action-btn delete" id="board-delete-thread-btn"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>
-            <div class="board-paper">
-            <div class="board-paper-top-line"></div>
-            <div class="board-paper-content" id="board-detail-body"></div>
-                <div id="board-edit-actions-bar" style="display:none; margin-top:24px; padding-top:16px; border-top:1px dashed var(--border-color); gap:10px; justify-content:flex-end; display:none;">
-                    <button class="board-compose-btn cancel" id="board-edit-cancel-btn">取消</button>
-                    <button class="board-compose-btn send" id="board-edit-save-btn">保存</button>
-                </div>
-                <div class="board-detail-date" id="board-detail-date"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 留言板撰写 -->
-<div id="board-compose-modal" class="modal">
-  <div class="modal-content" id="board-v2-compose-container">
-    <div class="board-compose-wrapper">
-      <div class="board-compose-header">
-        <div class="board-compose-title"><i class="fas fa-pen-fancy"></i><span id="board-compose-title-text">写新留言</span></div>
-        <button class="board-compose-close" id="board-compose-close-btn"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="board-compose-paper">
-        <textarea id="bv2-compose-text" placeholder="写下你的碎碎念..." style="background:transparent!important;border:none!important;outline:none!important;font-family:var(--font-family)!important;font-size:14px!important;line-height:29px!important;color:var(--text-primary)!important;width:100%;resize:none;padding:14px 16px 14px 50px;min-height:180px;position:relative;z-index:1;"></textarea>
-      </div>
-      <div style="padding:0 16px 10px;display:flex;justify-content:space-between;align-items:center;">
-        <label style="cursor:pointer;color:var(--text-secondary);font-size:18px;">
-          <i class="fas fa-image"></i>
-          <input type="file" accept="image/*" id="bv2-compose-img-input" style="display:none;">
-          <input type="file" accept="image/*" id="bv2-detail-img-input" style="display:none;">
-        </label>
-        <span id="bv2-img-hint" style="font-size:11px;color:var(--accent-color);display:none;">已选图片</span>
-      </div>
-      <div class="board-compose-footer">
-        <button class="board-compose-btn cancel" id="board-compose-cancel-btn">取消</button>
-        <button class="board-compose-btn send" id="board-compose-send-btn">发布</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 图片编辑选择框 -->
-<div id="board-img-action-modal" class="modal" style="align-items: center;">
-  <div style="background:var(--primary-bg); border-radius:16px; padding:24px; width:min(300px, 85vw); box-shadow: 0 10px 40px rgba(0,0,0,0.3); border:1px solid var(--border-color); text-align:center;">
-    <p style="margin:0 0 20px 0; font-size:15px; font-weight:600; color:var(--text-primary); font-family:var(--font-family);">选择图片操作</p>
-    <div style="display:flex; gap:12px; justify-content:center;">
-      <button id="board-img-replace-action" style="flex:1; padding:10px; border:none; border-radius:10px; background:var(--accent-color); color:#fff; font-size:14px; font-weight:600; cursor:pointer; font-family:var(--font-family);">替换图片</button>
-      <button id="board-img-delete-action" style="flex:1; padding:10px; border:1px solid #ff4757; border-radius:10px; background:transparent; color:#ff4757; font-size:14px; font-weight:600; cursor:pointer; font-family:var(--font-family);">删除图片</button>
-    </div>
-    <button id="board-img-action-cancel" style="margin-top:16px; background:none; border:none; color:var(--text-secondary); font-size:13px; cursor:pointer; font-family:var(--font-family);">取消</button>
-  </div>
-</div>
-
-<!-- 隐藏的文件选择器(给详情页替换用) -->
-<input type="file" accept="image/*" id="bv2-detail-img-input" style="display:none;">
 
 
     <div class="modal" id="mood-modal">
@@ -2266,6 +2165,5 @@
     <script src="js/onboarding.js"></script> 
     <script src="js/listeners.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/highfunctions/boards.js"></script>
 </body>
 </html>
