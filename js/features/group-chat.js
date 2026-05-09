@@ -270,7 +270,7 @@ if (exportAllBtn) {
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;background:var(--primary-bg);font-size:13px;color:var(--text-primary);">
                             <input type="checkbox" id="_bk_msgs" checked style="accent-color:var(--accent-color);width:15px;height:15px;">
                             <i class="fas fa-comments" style="color:var(--accent-color);width:16px;text-align:center;"></i>
-                            <span>聊天记录 <span style="font-size:11px;color:var(--text-secondary);">(${messages.letypeof messages !== 'undefined' ? messages.length : 0} 条)</span></span>
+                            <span>聊天记录 <span style="font-size:11px;color:var(--text-secondary);">(${messages.length} 条)</span></span>
                         </label>
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;background:var(--primary-bg);font-size:13px;color:var(--text-primary);">
                             <input type="checkbox" id="_bk_settings" checked style="accent-color:var(--accent-color);width:15px;height:15px;">

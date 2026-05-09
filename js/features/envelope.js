@@ -29,18 +29,22 @@ async function checkEnvelopeStatus() {
     const now = Date.now();
     let changed = false;
     let newReplyLetter = null;
+
+    // 处理 pending 状态的留言：首次回复
     envelopeData.outbox.forEach(letter => {
         if (letter.status === 'pending' && now >= letter.replyTime) {
             letter.status = 'replied';
+            letter.lastReplyTime = now;
+            letter.replyCount = 1;
             const replyContent = generateEnvelopeReplyText();
-            const replyId = 'reply_' + Date.now() + '_' + Math.random().toString(36).substr(2,4);
             const inboxLetter = {
-                id: replyId,
+                id: 'reply_' + Date.now() + '_' + Math.random().toString(36).substr(2,4),
                 refId: letter.id,
                 originalContent: letter.content,
                 content: replyContent,
-                receivedTime: Date.now(),
-                isNew: true
+                receivedTime: now,
+                isNew: true,
+                likes: 0
             };
             envelopeData.inbox.push(inboxLetter);
             newReplyLetter = inboxLetter;
@@ -48,6 +52,28 @@ async function checkEnvelopeStatus() {
             playSound('message');
         }
     });
+
+    // 处理已回复的留言：只在用户追加回复后，且当前时间超过设定的 replyTime 时生成一条新回复
+    envelopeData.outbox.forEach(letter => {
+        if (letter.status === 'replied' && letter.userHasReplied && now >= letter.replyTime) {
+            // 生成新回复
+            const replyContent = generateEnvelopeReplyText();
+            envelopeData.inbox.push({
+                id: 'reply_' + Date.now() + '_' + Math.random().toString(36).substr(2,4),
+                refId: letter.id,
+                content: replyContent,
+                receivedTime: now,
+                isNew: true,
+                likes: 0
+            });
+            // 重置标志，等待用户下次追加
+            letter.userHasReplied = false;
+            letter.replyTime = 0; // 或保留为 null
+            letter.replyCount = (letter.replyCount || 0) + 1;
+            changed = true;
+        }
+    });
+
     if (changed) {
         saveEnvelopeData();
         if (newReplyLetter) showEnvelopeReplyPopup(newReplyLetter);
@@ -128,17 +154,24 @@ window.openEnvelopeAndViewReply = function(replyId) {
 };
 
 function generateEnvelopeReplyText() {
-    const sourcePool = [...customReplies];
-    const sentenceCount = Math.floor(Math.random() * (12 - 8 + 1)) + 8;
-    let replyContent = "";
-    for (let i = 0; i < sentenceCount; i++) {
-        const randomSentence = sourcePool[Math.floor(Math.random() * sourcePool.length)];
-        const punctuation = Math.random() < 0.2 ? "！" : (Math.random() < 0.2 ? "..." : "。");
-        replyContent += randomSentence + punctuation;
+    const pool = [...customReplies];
+    if (!pool.length) return '（暂无字卡）';
+    const count = Math.floor(Math.random() * 6) + 3; // 3~8
+    let reply = '';
+    for (let i = 0; i < count; i++) {
+        const r = pool[Math.floor(Math.random() * pool.length)];
+        reply += r + (Math.random() < 0.3 ? '！' : '。');
     }
-    return replyContent;
+    // 30% 概率混入表情包
+    if (Math.random() < 0.3 && stickerLibrary.length > 0) {
+        const stickerCount = Math.floor(Math.random() * 3) + 1;
+        for (let i = 0; i < stickerCount; i++) {
+            const img = stickerLibrary[Math.floor(Math.random() * stickerLibrary.length)];
+            reply += `\n<img src="${img}" style="max-width:80px;border-radius:6px;">`;
+        }
+    }
+    return reply;
 }
-
 
 window.switchEnvTab = function(tab) {
     currentEnvTab = tab;
@@ -257,15 +290,19 @@ window.viewEnvLetter = function(section, id) {
     editingEnvId = id;
     editingEnvSection = section;
 
-    document.getElementById('env-view-title').textContent = section === 'outbox' ? '寄出的信' : '收到的回信';
+    // 修复标题
+    document.getElementById('env-view-title').textContent = section === 'outbox' ? '我的留言' : '收到的留言';
 
-    const dateObj = letter.timestamp ? new Date(letter.timestamp) : new Date();
+    // 正确使用 sentTime 或 receivedTime
+    const dateObj = section === 'outbox'
+        ? (letter.sentTime ? new Date(letter.sentTime) : new Date())
+        : (letter.receivedTime ? new Date(letter.receivedTime) : new Date());
+
     const y = dateObj.getFullYear();
     const mo = String(dateObj.getMonth()+1).padStart(2,'0');
     const d = String(dateObj.getDate()).padStart(2,'0');
-    const dateStr = `${y}/${mo}/${d}`;
     const weekdays = ['日','一','二','三','四','五','六'];
-    const fullDateStr = dateStr + ' 星期' + weekdays[dateObj.getDay()];
+    const fullDateStr = `${y}/${mo}/${d} 星期${weekdays[dateObj.getDay()]} ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
 
     const stampEl = document.getElementById('env-view-stamp-date');
     if (stampEl) stampEl.textContent = `${mo}/${d}`;
@@ -304,6 +341,8 @@ window.viewEnvLetter = function(section, id) {
     document.getElementById('env-view-edit').style.display = 'none';
     document.getElementById('env-view-edit-btn').style.display = 'inline-flex';
     document.getElementById('env-view-save-btn').style.display = 'none';
+
+    // 原信引用（仅 inbox）
     const origCtx = document.getElementById('env-view-original-ctx');
     const origText = document.getElementById('env-view-original-text');
     const origExpand = document.getElementById('env-view-original-expand');
@@ -320,8 +359,30 @@ window.viewEnvLetter = function(section, id) {
             origCtx.style.display = 'none';
         }
     }
+
+    // 追加回复按钮（仅 outbox）
+    const modalButtons = document.querySelector('#envelope-view-modal .modal-buttons');
+    if (modalButtons) {
+        const oldBtn = document.getElementById('env-add-reply-btn');
+        if (oldBtn) oldBtn.remove();
+        if (section === 'outbox') {
+            const addReplyBtn = document.createElement('button');
+            addReplyBtn.id = 'env-add-reply-btn';
+            addReplyBtn.className = 'modal-btn modal-btn-primary';
+            addReplyBtn.textContent = '追加回复';
+            addReplyBtn.onclick = () => {
+                const newText = prompt('输入你的追加回复：');
+                if (newText && newText.trim()) {
+                    window.addUserReply(letter.id, newText.trim());
+                }
+            };
+            modalButtons.appendChild(addReplyBtn);
+        }
+    }
+
     showModal(document.getElementById('envelope-view-modal'));
 };
+
 
 window.toggleEnvEdit = function() {
     const contentEl = document.getElementById('env-view-content');
@@ -419,3 +480,22 @@ function handleSendEnvelope() {
     showNotification(`信件已寄出，预计 ${Math.floor(randomHours)} 小时后收到回信 ✉️`, 'success');
 }
 
+// 用户追加回复
+window.addUserReply = function(letterId, text) {
+    const letter = envelopeData.outbox.find(l => l.id === letterId);
+    if (!letter || !text.trim()) return;
+    // 记录用户追加内容（可选）
+    letter.userReplies = letter.userReplies || [];
+    letter.userReplies.push({ text: text.trim(), time: Date.now() });
+    // 设置标志，并设定对方下次回复的时间
+    letter.userHasReplied = true;
+    letter.lastUserReplyTime = Date.now();
+    const minHours = 6, maxHours = 12;
+    const randomHours = Math.random() * (maxHours - minHours) + minHours;
+    letter.replyTime = Date.now() + randomHours * 60 * 60 * 1000;
+    saveEnvelopeData();
+    showNotification('已追加留言 ✦', 'success');
+    // 刷新列表等
+    renderEnvelopeLists();
+    if (typeof throttledSaveData === 'function') throttledSaveData();
+};

@@ -31,7 +31,7 @@ let _batchModeTarget = 'custom'; // 'custom' or 'stickers' (depends on currentSu
 let _searchVisible = false;
 let _searchQuery = '';
 let _searchDebounceTimer = null;
-let _activeGroupFilter = null;
+let _activeGroupFilter = null; 
 
 const GROUP_COLORS = [
     '#FF6B6B','#FF8E53','#FFC542','#51CF66',
@@ -520,6 +520,7 @@ function _renderModernToolbar() {
             if (isStickersTab) {
                 const deleted = indices.map(i => stickerLibrary[i]).filter(Boolean);
                 indices.forEach(i => stickerLibrary.splice(i, 1));
+                // 同步清理已删除条目的“屏蔽集合”
                 const dis = _getDisabledStickerItemsSet();
                 deleted.forEach(d => dis.delete(d));
                 _saveDisabledStickerItemsSet(dis);
@@ -527,8 +528,6 @@ function _renderModernToolbar() {
                 throttledSaveData();
                 renderReplyLibrary();
                 showNotification(`已删除 ${indices.length} 个贴纸`, 'success');
-                // 同步留言板回复池（虽然贴纸不会影响留言板回复，但为了统一性也调用）
-                if (typeof window.syncBoardReplyPool === 'function') window.syncBoardReplyPool();
             } else {
                 const deletedTexts = indices.map(i => customReplies[i]);
                 indices.forEach(i => customReplies.splice(i, 1));
@@ -541,8 +540,6 @@ function _renderModernToolbar() {
                 throttledSaveData();
                 renderReplyLibrary();
                 showNotification(`已删除 ${indices.length} 条`, 'success');
-                // 同步留言板回复池
-                if (typeof window.syncBoardReplyPool === 'function') window.syncBoardReplyPool();
             }
         });
     }
@@ -890,9 +887,6 @@ function _renderStickerTab(list, itemsToRender) {
                 _batchSelectedIndices.clear();
                 throttledSaveData();
                 renderReplyLibrary();
-                showNotification('表情已删除', 'success');
-                // 同步留言板回复池
-                if (typeof window.syncBoardReplyPool === 'function') window.syncBoardReplyPool();
             }
         });
         list.appendChild(div);
@@ -979,8 +973,6 @@ function _runDedup() {
     if (totalRemoved > 0) {
         throttledSaveData(); renderReplyLibrary();
         showNotification(`🧹 共清理了 ${totalRemoved} 条重复内容`, 'success');
-        // 同步留言板回复池
-        if (typeof window.syncBoardReplyPool === 'function') window.syncBoardReplyPool();
     } else {
         showNotification('✨ 没有重复内容', 'info');
     }
@@ -1361,8 +1353,6 @@ function deleteItem(index) {
     }
     throttledSaveData();
     renderReplyLibrary();
-    // 同步留言板回复池
-    if (typeof window.syncBoardReplyPool === 'function') window.syncBoardReplyPool();
 }
 
 function editItem(index, oldText) {
@@ -1393,8 +1383,6 @@ function editItem(index, oldText) {
     else if (currentSubTab === 'intros') customIntros[index] = newText.trim();
     throttledSaveData();
     renderReplyLibrary();
-    // 同步留言板回复池
-    if (typeof window.syncBoardReplyPool === 'function') window.syncBoardReplyPool();
 }
 
 function renderEmptyState(text) {
@@ -1873,8 +1861,6 @@ function _showImportUI(data) {
             if (typeof renderReplyLibrary === 'function') renderReplyLibrary();
             if (typeof window.renderAnnStatusPool === 'function') window.renderAnnStatusPool();
             showNotification(`✓ 导入成功（${overwrite ? '覆盖' : '追加'}）${totalAdded > 0 ? `，共 ${totalAdded} 条` : ''}`, 'success', 3000);
-            // 同步留言板回复池
-            if (typeof window.syncBoardReplyPool === 'function') window.syncBoardReplyPool();
         } catch (err) {
             console.error('字卡导入失败:', err);
             showNotification('导入过程中发生错误：' + err.message, 'error');
@@ -2183,8 +2169,6 @@ function _showBatchAddDialog() {
         const groupHint = _selectedGroupIdx >= 0 && groups?.[_selectedGroupIdx]
             ? `，已加入「${groups[_selectedGroupIdx].name}」` : '';
         showNotification(`✓ 添加 ${added} 条${skipped ? `，跳过 ${skipped} 条重复` : ''}${groupHint}`, 'success');
-        // 同步留言板回复池
-        if (typeof window.syncBoardReplyPool === 'function') window.syncBoardReplyPool();
     };
 }
 
@@ -2311,8 +2295,6 @@ function initReplyLibraryListeners() {
                     customEmojis.push(input.trim());
                     throttledSaveData(); renderReplyLibrary();
                     showNotification('✓ Emoji 已添加', 'success');
-                    // 同步留言板回复池（虽然 emoji 不影响，但保持统一）
-                    if (typeof window.syncBoardReplyPool === 'function') window.syncBoardReplyPool();
                 }
                 return;
             }
@@ -2343,8 +2325,6 @@ function initReplyLibraryListeners() {
                 else if (currentSubTab === 'intros') customIntros.unshift(val);
                 throttledSaveData(); renderReplyLibrary();
                 showNotification('✓ 添加成功', 'success');
-                // 同步留言板回复池
-                if (typeof window.syncBoardReplyPool === 'function') window.syncBoardReplyPool();
             }
         });
     }
