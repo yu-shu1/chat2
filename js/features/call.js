@@ -940,11 +940,75 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
 
     window.callFeature = { startCall, endCall, showIncomingCall, restoreWindow, minimizeWindow };
 
+    // ----- 铃声设置初始化（已修复，可安全在任意时机调用）-----
+    function initRingtoneSettings() {
+        const presetSelect = document.getElementById('call-ringtone-preset');
+        const customUrl = document.getElementById('call-ringtone-custom-url');
+        const testBtn = document.getElementById('test-call-ringtone-btn');
+        const uploadBtn = document.getElementById('upload-call-ringtone-btn');
+        const fileInput = document.getElementById('upload-call-ringtone-file');
+
+        if (presetSelect) {
+            presetSelect.value = S.ringtonePreset;
+            presetSelect.addEventListener('change', () => {
+                S.ringtonePreset = presetSelect.value;
+                localStorage.setItem(KEY_RINGTONE_PRESET, S.ringtonePreset);
+                S.ringtoneCustom = null;
+                localStorage.removeItem(KEY_RINGTONE_CUSTOM);
+                if (customUrl) customUrl.value = '';
+                if (typeof showNotification === 'function') {
+                    showNotification('已切换至预设铃声', 'info', 1500);
+                }
+            });
+        }
+
+        if (customUrl) {
+            customUrl.value = S.ringtoneCustom || '';
+            customUrl.addEventListener('change', () => {
+                S.ringtoneCustom = customUrl.value.trim() || null;
+                localStorage.setItem(KEY_RINGTONE_CUSTOM, S.ringtoneCustom || '');
+                if (S.ringtoneCustom && typeof showNotification === 'function') {
+                    showNotification('已启用自定义铃声', 'info', 1500);
+                }
+            });
+        }
+
+        if (testBtn) {
+            testBtn.addEventListener('click', () => {
+                stopRingtone();
+                playRingtone();
+                setTimeout(stopRingtone, 4000);
+            });
+        }
+
+        if (uploadBtn && fileInput) {
+            uploadBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    const base64 = ev.target.result;
+                    S.ringtoneCustom = base64;
+                    localStorage.setItem(KEY_RINGTONE_CUSTOM, base64);
+                    if (customUrl) customUrl.value = '[已上传]';
+                };
+                reader.readAsDataURL(file);
+                fileInput.value = '';
+            });
+        }
+    }
+
+    // 暴露给外部（兼容旧调用）
+    window.initRingtoneSettings = initRingtoneSettings;
+
     function init() {
         injectCSS();
         injectHTML();
         bindEvents();
         loadBg();
+        // 自动初始化铃声设置
+        initRingtoneSettings();
 
         const late = () => {
             injectToolbarBtn();
@@ -973,61 +1037,3 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
 
     init();
 })();
-
-function initRingtoneSettings() {
-    const presetSelect = document.getElementById('call-ringtone-preset');
-    const customUrl = document.getElementById('call-ringtone-custom-url');
-    const testBtn = document.getElementById('test-call-ringtone-btn');
-    const uploadBtn = document.getElementById('upload-call-ringtone-btn');
-    const fileInput = document.getElementById('upload-call-ringtone-file');
-
-    if (presetSelect) {
-        presetSelect.value = S.ringtonePreset;
-        presetSelect.addEventListener('change', () => {
-            S.ringtonePreset = presetSelect.value;
-            localStorage.setItem(KEY_RINGTONE_PRESET, S.ringtonePreset);
-            // 清除之前可能存储的自定义铃声，确保播放预设
-            S.ringtoneCustom = null;
-            localStorage.removeItem(KEY_RINGTONE_CUSTOM);
-            if (customUrl) customUrl.value = '';
-            if (typeof showNotification === 'function') {
-                showNotification('已切换至预设铃声', 'info', 1500);
-            }
-        });
-    }
-    
-    if (customUrl) {
-        customUrl.value = S.ringtoneCustom || '';
-        customUrl.addEventListener('change', () => {
-            S.ringtoneCustom = customUrl.value.trim() || null;
-            localStorage.setItem(KEY_RINGTONE_CUSTOM, S.ringtoneCustom || '');
-            if (S.ringtoneCustom && typeof showNotification === 'function') {
-                showNotification('已启用自定义铃声', 'info', 1500);
-            }
-        });
-    
-    }
-    if (testBtn) {
-        testBtn.addEventListener('click', () => {
-            stopRingtone();
-            playRingtone();
-            setTimeout(stopRingtone, 4000);
-        });
-    }
-    if (uploadBtn && fileInput) {
-        uploadBtn.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = ev => {
-                const base64 = ev.target.result;
-                S.ringtoneCustom = base64;
-                localStorage.setItem(KEY_RINGTONE_CUSTOM, base64);
-                if (customUrl) customUrl.value = '[已上传]';
-            };
-            reader.readAsDataURL(file);
-            fileInput.value = '';
-        });
-    }
-}
