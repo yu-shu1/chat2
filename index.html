@@ -2167,5 +2167,97 @@
     <script src="js/onboarding.js"></script> 
     <script src="js/listeners.js"></script>
     <script src="js/app.js"></script>
+    
+    <script>
+(function() {
+    // 等待页面完全加载，确保所有 DOM 元素存在
+    window.addEventListener('load', function() {
+        // 定义要修复的按钮映射（ID → 处理函数）
+        var fixMap = {
+            'custom-replies-function': function() { 
+                var modal = document.getElementById('custom-replies-modal');
+                if (modal && typeof showModal === 'function') {
+                    if (typeof renderReplyLibrary === 'function') renderReplyLibrary();
+                    showModal(modal);
+                } else {
+                    alert('自定义回复模块未加载，请刷新页面重试');
+                }
+            },
+            'stats-function': function() {
+                var modal = document.getElementById('stats-modal');
+                if (modal && typeof showModal === 'function') {
+                    if (typeof renderStatsContent === 'function') renderStatsContent();
+                    showModal(modal);
+                }
+            },
+            'fortune-lenormand-function': function() {
+                var modal = document.getElementById('fortune-lenormand-modal');
+                if (modal && typeof showModal === 'function') {
+                    if (typeof generateFortune === 'function') generateFortune();
+                    showModal(modal);
+                }
+            },
+            'anniversary-function': function() {
+                var modal = document.getElementById('anniversary-modal');
+                if (modal && typeof showModal === 'function') {
+                    if (typeof renderAnniversariesList === 'function') renderAnniversariesList();
+                    showModal(modal);
+                }
+            },
+            'mood-function': function() {
+                var modal = document.getElementById('mood-modal');
+                if (modal && typeof showModal === 'function') {
+                    if (typeof renderMoodCalendar === 'function') renderMoodCalendar();
+                    showModal(modal);
+                }
+            },
+            'envelope-function': function() {
+                var modal = document.getElementById('envelope-modal');
+                if (modal && typeof showModal === 'function') {
+                    if (typeof loadEnvelopeData === 'function') loadEnvelopeData().then(function() {
+                        if (typeof renderEnvelopeLists === 'function') renderEnvelopeLists();
+                    }).catch(function() {});
+                    showModal(modal);
+                }
+            },
+            'decision-function': function() {
+                var modal = document.getElementById('decision-menu-modal');
+                if (modal && typeof showModal === 'function') showModal(modal);
+            }
+        };
+
+        // 为每个按钮绑定点击事件（覆盖原有监听）
+        for (var id in fixMap) {
+            var btn = document.getElementById(id);
+            if (btn) {
+                // 移除旧监听（简单粗暴：克隆替换）
+                var newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+                newBtn.addEventListener('click', fixMap[id]);
+            }
+        }
+
+        // 额外修复留言板的“提笔留言”按钮
+        var writeBtn = document.getElementById('new-envelope-btn');
+        if (writeBtn) {
+            var newWrite = writeBtn.cloneNode(true);
+            writeBtn.parentNode.replaceChild(newWrite, writeBtn);
+            newWrite.addEventListener('click', function() {
+                var form = document.getElementById('env-compose-form');
+                var outbox = document.getElementById('env-outbox-section');
+                var inbox = document.getElementById('env-inbox-section');
+                var closeBtn = document.getElementById('env-main-close-btn');
+                if (form) form.style.display = 'block';
+                if (outbox) outbox.style.display = 'none';
+                if (inbox) inbox.style.display = 'none';
+                if (closeBtn) closeBtn.style.display = 'none';
+            });
+        }
+
+        console.log('✅ 高级功能修复脚本已执行，所有按钮应已恢复');
+    });
+})();
+</script>
+    
 </body>
 </html>
