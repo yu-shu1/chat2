@@ -1,6 +1,8 @@
 (function () {
     'use strict';
 
+    if (typeof settings === 'undefined') var settings = { soundVolume: 0.15 };
+
     const KEY_ENABLED  = 'callFeatureEnabled';
     const KEY_POS      = 'callWindowPos';
     const KEY_SIZE     = 'callWindowSize';
@@ -62,7 +64,7 @@ function playRingtone() {
     if (!url) return;
     _ringtoneAudio = new Audio(url);
     _ringtoneAudio.loop = true;
-    _ringtoneAudio.volume = Math.min(0.4, settings.soundVolume || 0.15);
+    _ringtoneAudio.volume = Math.min(0.4, (typeof settings !== 'undefined' && settings.soundVolume) || 0.15);
     _ringtoneAudio.play().catch(e => {
         console.warn('铃声播放失败', e);
         if (typeof showNotification === 'function') {
