@@ -133,7 +133,10 @@
                 name: document.getElementById('partner-name'),
                 avatarContainer: document.getElementById('partner-avatar-container'), 
                 avatar: document.getElementById('partner-avatar'),
-                status: document.getElementById('partner-status').querySelector('span')
+                status: (() => {
+                    const el = document.getElementById('partner-status');
+                    return el ? (el.querySelector('span') || el) : document.createElement('span');
+                })()                
             },
             me: {
                 name: document.getElementById('my-name'),

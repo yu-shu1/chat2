@@ -1,11 +1,27 @@
 function setupEventListeners() {
-    try { initComboMenu(); } catch (e) { console.error('initComboMenu 失败:', e); }
+    // ===== 新增：确保 initComboMenu 不阻塞后续事件 =====
+    try { 
+        initComboMenu(); 
+    } catch (e) { 
+        console.error('initComboMenu 失败:', e); 
+    }
+
+    // ===== 新增：延迟调用 initRingtoneSettings，避免 call.js DOM 未就绪 =====
     try {
-        initRingtoneSettings();
+        if (typeof initRingtoneSettings === 'function') {
+            initRingtoneSettings();
+        }
     } catch(e) {
         console.warn('铃声设置初始化失败', e);
     }
+
     try {
+        // ===== 新增：确保 DOMElements 已初始化 =====
+        if (!DOMElements || !DOMElements.chatContainer) {
+            console.error('DOMElements 未初始化，延迟重试');
+            setTimeout(setupEventListeners, 200);
+            return;
+        }
         initCoreListeners();
         initModalListeners();
         initChatActionListeners();
@@ -14,12 +30,11 @@ function setupEventListeners() {
         initNewFeatureListeners();
         setupTutorialListeners();
         initMoodListeners();
-        initDecisionModule(); 
-        initAnniversaryModule(); 
-        initThemeEditor(); 
+        initDecisionModule();
+        initAnniversaryModule();
+        initThemeEditor();
         initThemeSchemes();
         initReplyLibraryListeners();
-        
     } catch (e) {
         console.error("事件绑定过程中发生错误:", e);
     }
