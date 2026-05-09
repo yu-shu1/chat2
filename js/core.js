@@ -189,9 +189,9 @@ function loadMoreHistory() {
                 emojiMixEnabled: true,
                 phraseCombiningEnabled: false,
                 enterToSend: true,          // 默认回车发送
-                keepKeyboardAfterSend: false， // 默认发送后不保留键盘
+                keepKeyboardAfterSend: false, // 默认发送后不保留键盘
                 autoEnvelopeEnabled: false,
-                autoEnvelopeInterval: 5，
+                autoEnvelopeInterval: 5
             };
         }
 
