@@ -1,3 +1,7 @@
+if (typeof customReplies === 'undefined') window.customReplies = [];
+if (typeof stickerLibrary === 'undefined') window.stickerLibrary = [];
+if (typeof CONSTANTS === 'undefined') window.CONSTANTS = { REPLY_MESSAGES: [] };
+
 let envelopeData = { outbox: [], inbox: [] }; 
 let currentEnvTab = 'outbox';
 let editingEnvId = null; 

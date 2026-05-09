@@ -1,7 +1,9 @@
 (function () {
     'use strict';
 
-    if (typeof settings === 'undefined') var settings = { soundVolume: 0.15 };
+if (typeof showNotification !== 'function') {
+    window.showNotification = function(msg, type, dur) { console.log('[notify]', msg); };
+}
 
     const KEY_ENABLED  = 'callFeatureEnabled';
     const KEY_POS      = 'callWindowPos';
@@ -64,7 +66,8 @@ function playRingtone() {
     if (!url) return;
     _ringtoneAudio = new Audio(url);
     _ringtoneAudio.loop = true;
-    _ringtoneAudio.volume = Math.min(0.4, (typeof settings !== 'undefined' && settings.soundVolume) || 0.15);
+    var vol = (typeof settings !== 'undefined' && settings.soundVolume != null) ? settings.soundVolume : 0.15;
+    _ringtoneAudio.volume = Math.min(0.4, vol);
     _ringtoneAudio.play().catch(e => {
         console.warn('铃声播放失败', e);
         if (typeof showNotification === 'function') {
