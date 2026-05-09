@@ -664,5 +664,9 @@ window.syncBoardReplyPool = function() {
     }
 };
 
-loadData().then(() => { setInterval(checkStatus, 60000); checkStatus(); });
+
+loadData().then(() => {
+    setInterval(checkStatus, 60000);
+    checkStatus();
+}).catch(err => console.warn('留言板初始化失败:', err));
 })();
