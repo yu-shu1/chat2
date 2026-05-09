@@ -287,7 +287,6 @@ const loadData = async () => {
     try {
         settings = getDefaultSettings();
 
-        
         const results = await Promise.allSettled([
             localforage.getItem(getStorageKey('chatSettings')),
             localforage.getItem(getStorageKey('chatMessages')),
@@ -335,7 +334,7 @@ const loadData = async () => {
         const savedReplyGroups = getVal(18);
         const savedPokeGroups = getVal(19);
         const savedStatusGroups = getVal(20);
-        const savedBoard = getVal(21); // 根据你添加的位置决定索引
+        const savedBoard = getVal(21);
 
         if (savedPartnerPersonas) partnerPersonas = savedPartnerPersonas;
 
@@ -353,17 +352,27 @@ const loadData = async () => {
             if (settings.customGlobalCss) applyGlobalThemeCss(settings.customGlobalCss);
         } catch(e) { console.warn("样式应用失败", e); }
         
-        if (savedPokes) customPokes = savedPokes;
-        else customPokes = [...CONSTANTS.POKE_ACTIONS];
+        // ======== 关键修复：强制数组类型保护 ========
+        customReplies = Array.isArray(savedCustomReplies) ? savedCustomReplies : [...CONSTANTS.REPLY_MESSAGES];
+        customPokes = Array.isArray(savedPokes) ? savedPokes : [...CONSTANTS.POKE_ACTIONS];
+        customStatuses = Array.isArray(savedStatuses) ? savedStatuses : [...CONSTANTS.PARTNER_STATUSES];
+        customMottos = Array.isArray(savedMottos) ? savedMottos : [...CONSTANTS.HEADER_MOTTOS];
+        customIntros = Array.isArray(savedIntros) ? savedIntros : CONSTANTS.WELCOME_ANIMATIONS.map(a => `${a.line1}|${a.line2}`);
+        anniversaries = Array.isArray(savedAnniversaries) ? savedAnniversaries : [];
+        stickerLibrary = Array.isArray(savedStickers) ? savedStickers : [];
+        myStickerLibrary = Array.isArray(savedMyStickers) ? savedMyStickers : [];
+        customThemes = Array.isArray(savedCustomThemes) ? savedCustomThemes : [];
+        themeSchemes = Array.isArray(savedThemeSchemes) ? savedThemeSchemes : [];
+        window.customReplyGroups = Array.isArray(savedReplyGroups) ? savedReplyGroups : [];
+        window.customPokeGroups = Array.isArray(savedPokeGroups) ? savedPokeGroups : [];
+        window.customStatusGroups = Array.isArray(savedStatusGroups) ? savedStatusGroups : [];
 
-        if (savedStatuses) customStatuses = savedStatuses;
-        else customStatuses = [...CONSTANTS.PARTNER_STATUSES];
-
-        if (savedMottos) customMottos = savedMottos;
-        else customMottos = [...CONSTANTS.HEADER_MOTTOS];
-        
-        if (savedIntros) customIntros = savedIntros;
-        else customIntros = CONSTANTS.WELCOME_ANIMATIONS.map(a => `${a.line1}|${a.line2}`);
+        try {
+            const ce = await localforage.getItem(getStorageKey('customEmojis'));
+            customEmojis = (ce && Array.isArray(ce)) ? ce : [];
+        } catch(e) {
+            customEmojis = [];
+        }
 
         if (savedMessages && Array.isArray(savedMessages)) {
             messages = savedMessages.map(m => ({
@@ -397,16 +406,6 @@ const loadData = async () => {
             savedBackgrounds = [{ id: 'preset-1', type: 'color', value: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }];
         }
 
-        if (savedCustomReplies) customReplies = savedCustomReplies;
-        if (savedReplyGroups) window.customReplyGroups = savedReplyGroups;
-        if (savedPokeGroups) window.customPokeGroups = savedPokeGroups;
-        if (savedStatusGroups) window.customStatusGroups = savedStatusGroups;
-        if (savedAnniversaries) anniversaries = savedAnniversaries;
-        if (savedStickers) stickerLibrary = savedStickers;
-        if (savedMyStickers) myStickerLibrary = savedMyStickers;
-        if (savedCustomThemes) customThemes = savedCustomThemes;
-        if (savedThemeSchemes) themeSchemes = savedThemeSchemes;
-        try { const ce = await localforage.getItem(getStorageKey('customEmojis')); if (ce && Array.isArray(ce)) customEmojis = ce; } catch(e) {}
         window._customReplies = customReplies;
         window._CONSTANTS = CONSTANTS;
 
@@ -566,6 +565,9 @@ function _tryRecoverFromBackup() {
         return null;
     }
 }
+
+// (下文 saveData、createMessageFragment 等函数不变，此处省略，但保留原文件中的完整内容)
+// 请确保其他函数（如 saveData、addMessage 等）没有被修改，只修改了 loadData 部分。
 
 const saveData = async () => {
     if (!SESSION_ID) {

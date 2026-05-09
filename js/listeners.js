@@ -1,6 +1,11 @@
 function setupEventListeners() {
     try { initComboMenu(); } catch (e) { console.error('initComboMenu 失败:', e); }
     try {
+        initRingtoneSettings();
+    } catch(e) {
+        console.warn('铃声设置初始化失败', e);
+    }
+    try {
         initCoreListeners();
         initModalListeners();
         initChatActionListeners();
@@ -13,7 +18,6 @@ function setupEventListeners() {
         initAnniversaryModule(); 
         initThemeEditor(); 
         initThemeSchemes();
-        initRingtoneSettings();
         initReplyLibraryListeners();
         
     } catch (e) {
