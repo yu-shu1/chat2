@@ -307,27 +307,27 @@ if (target.classList.contains('delete-btn')) {
                 });
 
 
-fileInput.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        if (file.size > MAX_AVATAR_SIZE) {
-            showNotification('头像图片不能超过2MB', 'error');
-            return;
-        }
-
-        showNotification('正在裁剪处理...', 'info', 1000);
-        
-        cropImageToSquare(file, 300).then(base64Data => {
-            currentAvatarData = base64Data;
-            previewImg.src = currentAvatarData;
-            previewDiv.style.display = 'block';
-            saveBtn.disabled = false;
-        }).catch(err => {
-            console.error(err);
-            showNotification('图片处理失败', 'error');
-        });
-    }
-});
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    if (file.size > MAX_AVATAR_SIZE) {
+                        showNotification('头像图片不能超过2MB', 'error');
+                        return;
+                    }
+            
+                    showNotification('正在裁剪处理...', 'info', 1000);
+                    
+                    cropImageToSquare(file, 300).then(base64Data => {
+                        currentAvatarData = base64Data;
+                        previewImg.src = currentAvatarData;
+                        previewDiv.style.display = 'block';
+                        saveBtn.disabled = false;
+                    }).catch(err => {
+                        console.error(err);
+                        showNotification('图片处理失败', 'error');
+                    });
+                }
+            });
 
 
                 urlInput.addEventListener('input',
@@ -419,119 +419,119 @@ fileInput.addEventListener('change', function(e) {
             });
 
 
-window.setReadReceiptStyle = function(style) {
-    settings.readReceiptStyle = style;
-    throttledSaveData();
-    const iconBtn = document.getElementById('rr-style-icon');
-    const textBtn = document.getElementById('rr-style-text');
-    if (iconBtn) { iconBtn.className = style === 'icon' ? 'modal-btn modal-btn-primary' : 'modal-btn modal-btn-secondary'; iconBtn.style.cssText = 'padding:5px 12px;font-size:12px;'; }
-    if (textBtn) { textBtn.className = style === 'text' ? 'modal-btn modal-btn-primary' : 'modal-btn modal-btn-secondary'; textBtn.style.cssText = 'padding:5px 12px;font-size:12px;'; }
-    renderMessages();
-    showNotification('已读回执样式已更新', 'success');
-};
+            window.setReadReceiptStyle = function(style) {
+                settings.readReceiptStyle = style;
+                throttledSaveData();
+                const iconBtn = document.getElementById('rr-style-icon');
+                const textBtn = document.getElementById('rr-style-text');
+                if (iconBtn) { iconBtn.className = style === 'icon' ? 'modal-btn modal-btn-primary' : 'modal-btn modal-btn-secondary'; iconBtn.style.cssText = 'padding:5px 12px;font-size:12px;'; }
+                if (textBtn) { textBtn.className = style === 'text' ? 'modal-btn modal-btn-primary' : 'modal-btn modal-btn-secondary'; textBtn.style.cssText = 'padding:5px 12px;font-size:12px;'; }
+                renderMessages();
+                showNotification('已读回执样式已更新', 'success');
+            };
+            
+            // 初始化两个新开关的状态
+            const enterToSendToggle = document.getElementById('enter-to-send-toggle');
+            const keepKeyboardToggle = document.getElementById('keep-keyboard-toggle');
+            if (enterToSendToggle) {
+                enterToSendToggle.classList.toggle('active', settings.enterToSend !== false);
+            }
+            if (keepKeyboardToggle) {
+                keepKeyboardToggle.classList.toggle('active', !!settings.keepKeyboardAfterSend);
+            }
 
-// 初始化两个新开关的状态
-const enterToSendToggle = document.getElementById('enter-to-send-toggle');
-const keepKeyboardToggle = document.getElementById('keep-keyboard-toggle');
-if (enterToSendToggle) {
-    enterToSendToggle.classList.toggle('active', settings.enterToSend !== false);
-}
-if (keepKeyboardToggle) {
-    keepKeyboardToggle.classList.toggle('active', !!settings.keepKeyboardAfterSend);
-}
-
-// 回车发送开关
-if (enterToSendToggle) {
-    enterToSendToggle.addEventListener('click', () => {
-        settings.enterToSend = !settings.enterToSend;
-        throttledSaveData();
-        enterToSendToggle.classList.toggle('active', settings.enterToSend);
-        showNotification(`回车${settings.enterToSend ? '发送' : '换行'}模式`, 'success');
-    });
-}
-
-// 保留键盘开关
-if (keepKeyboardToggle) {
-    keepKeyboardToggle.addEventListener('click', () => {
-        settings.keepKeyboardAfterSend = !settings.keepKeyboardAfterSend;
-        throttledSaveData();
-        keepKeyboardToggle.classList.toggle('active', settings.keepKeyboardAfterSend);
-        showNotification(`发送后${settings.keepKeyboardAfterSend ? '保留' : '收起'}键盘`, 'success');
-    });
-}
-
-
-const _chatSettingsEl = document.getElementById('chat-settings');
-if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
-    hideModal(DOMElements.settingsModal.modal);
-    
-    const toggleSyncMap = {
-        '#reply-toggle': { prop: 'replyEnabled', name: '引用回复' },
-        '#sound-toggle': { prop: 'soundEnabled', name: '音效' },
-        '#read-receipts-toggle': { prop: 'readReceiptsEnabled', name: '已读回执' },
-        '#typing-indicator-toggle': { prop: 'typingIndicatorEnabled', name: '正在输入' },
-        '#read-no-reply-toggle': { prop: 'allowReadNoReply', name: '已读不回' },
-        '#emoji-mix-toggle': { prop: 'emojiMixEnabled', name: '表情消息' }
-    };
-    for (const [selector, { prop }] of Object.entries(toggleSyncMap)) {
-        const el = document.querySelector(selector);
-        const val = prop === 'emojiMixEnabled' ? (settings[prop] !== false) : !!settings[prop];
-        if (el) el.classList.toggle('active', val);
-    }
-    const svSlider = document.getElementById('sound-volume-slider');
-    const svVal = document.getElementById('sound-volume-value');
-    if (svSlider) { svSlider.value = Math.round((settings.soundVolume || 0.15) * 100); if (svVal) svVal.textContent = svSlider.value + '%'; }
-    const legacyCustom = (settings.customSoundUrl || '').trim();
-
-    const setSelect = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val || 'tone_low';
-    };
-    const setInput = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val || '';
-    };
-    // 音频自定义值显示：base64 数据只显示友好文字
-    const setSoundUrlInput = (id, val) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        if (val && val.startsWith('data:audio')) {
-            el.value = '[本地文件（已上传）]';
-        } else {
-            el.value = val || '';
-        }
-    };
+            // 回车发送开关
+            if (enterToSendToggle) {
+                enterToSendToggle.addEventListener('click', () => {
+                    settings.enterToSend = !settings.enterToSend;
+                    throttledSaveData();
+                    enterToSendToggle.classList.toggle('active', settings.enterToSend);
+                    showNotification(`回车${settings.enterToSend ? '发送' : '换行'}模式`, 'success');
+                });
+            }
+            
+            // 保留键盘开关
+            if (keepKeyboardToggle) {
+                keepKeyboardToggle.addEventListener('click', () => {
+                    settings.keepKeyboardAfterSend = !settings.keepKeyboardAfterSend;
+                    throttledSaveData();
+                    keepKeyboardToggle.classList.toggle('active', settings.keepKeyboardAfterSend);
+                    showNotification(`发送后${settings.keepKeyboardAfterSend ? '保留' : '收起'}键盘`, 'success');
+                });
+            }
+            
+            
+            const _chatSettingsEl = document.getElementById('chat-settings');
+            if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
+                hideModal(DOMElements.settingsModal.modal);
+                
+                const toggleSyncMap = {
+                    '#reply-toggle': { prop: 'replyEnabled', name: '引用回复' },
+                    '#sound-toggle': { prop: 'soundEnabled', name: '音效' },
+                    '#read-receipts-toggle': { prop: 'readReceiptsEnabled', name: '已读回执' },
+                    '#typing-indicator-toggle': { prop: 'typingIndicatorEnabled', name: '正在输入' },
+                    '#read-no-reply-toggle': { prop: 'allowReadNoReply', name: '已读不回' },
+                    '#emoji-mix-toggle': { prop: 'emojiMixEnabled', name: '表情消息' }
+                };
+                for (const [selector, { prop }] of Object.entries(toggleSyncMap)) {
+                    const el = document.querySelector(selector);
+                    const val = prop === 'emojiMixEnabled' ? (settings[prop] !== false) : !!settings[prop];
+                    if (el) el.classList.toggle('active', val);
+                }
+                const svSlider = document.getElementById('sound-volume-slider');
+                const svVal = document.getElementById('sound-volume-value');
+                if (svSlider) { svSlider.value = Math.round((settings.soundVolume || 0.15) * 100); if (svVal) svVal.textContent = svSlider.value + '%'; }
+                const legacyCustom = (settings.customSoundUrl || '').trim();
+            
+                const setSelect = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val || 'tone_low';
+                };
+                const setInput = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val || '';
+                };
+                // 音频自定义值显示：base64 数据只显示友好文字
+                const setSoundUrlInput = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    if (val && val.startsWith('data:audio')) {
+                        el.value = '[本地文件（已上传）]';
+                    } else {
+                        el.value = val || '';
+                    }
+                };
 
 
-    setSelect('sound-my-send-preset', settings.mySendSoundPreset || 'tone_low');
-    setSoundUrlInput('sound-my-send-custom-url', (settings.mySendCustomSoundUrl || '').trim() || legacyCustom);
-
-    setSelect('sound-partner-message-preset', settings.partnerMessageSoundPreset || 'tone_low');
-    setSoundUrlInput('sound-partner-message-custom-url', (settings.partnerMessageCustomSoundUrl || '').trim() || legacyCustom);
-
-    setSelect('sound-my-poke-preset', settings.myPokeSoundPreset || 'tone_low');
-    setSoundUrlInput('sound-my-poke-custom-url', (settings.myPokeCustomSoundUrl || '').trim() || legacyCustom);
-
-    setSelect('sound-partner-poke-preset', settings.partnerPokeSoundPreset || 'tone_low');
-    setSoundUrlInput('sound-partner-poke-custom-url', (settings.partnerPokeCustomSoundUrl || '').trim() || legacyCustom);
-    document.querySelectorAll('.time-fmt-opt').forEach(opt => {
-        opt.classList.toggle('active', opt.dataset.fmt === (settings.timeFormat || 'HH:mm'));
-    });
-    const autoToggle = document.getElementById('auto-send-toggle');
-    if (autoToggle) autoToggle.classList.toggle('active', !!settings.autoSendEnabled);
-    updateAutoSendUI();
-    updateDelayUI();
-    const immToggle = document.getElementById('immersive-toggle');
-    if (immToggle) immToggle.classList.toggle('active', document.body.classList.contains('immersive-mode'));
-    const rrStyle = settings.readReceiptStyle || 'icon';
-    const rrIconBtn = document.getElementById('rr-style-icon');
-    const rrTextBtn = document.getElementById('rr-style-text');
-    if (rrIconBtn) { rrIconBtn.className = rrStyle === 'icon' ? 'modal-btn modal-btn-primary' : 'modal-btn modal-btn-secondary'; rrIconBtn.style.cssText = 'padding:5px 12px;font-size:12px;'; }
-    if (rrTextBtn) { rrTextBtn.className = rrStyle === 'text' ? 'modal-btn modal-btn-primary' : 'modal-btn modal-btn-secondary'; rrTextBtn.style.cssText = 'padding:5px 12px;font-size:12px;'; }
-    
-    showModal(DOMElements.chatModal.modal);
-    setupAvatarFrameSettings();
-});
+                setSelect('sound-my-send-preset', settings.mySendSoundPreset || 'tone_low');
+                setSoundUrlInput('sound-my-send-custom-url', (settings.mySendCustomSoundUrl || '').trim() || legacyCustom);
+            
+                setSelect('sound-partner-message-preset', settings.partnerMessageSoundPreset || 'tone_low');
+                setSoundUrlInput('sound-partner-message-custom-url', (settings.partnerMessageCustomSoundUrl || '').trim() || legacyCustom);
+            
+                setSelect('sound-my-poke-preset', settings.myPokeSoundPreset || 'tone_low');
+                setSoundUrlInput('sound-my-poke-custom-url', (settings.myPokeCustomSoundUrl || '').trim() || legacyCustom);
+            
+                setSelect('sound-partner-poke-preset', settings.partnerPokeSoundPreset || 'tone_low');
+                setSoundUrlInput('sound-partner-poke-custom-url', (settings.partnerPokeCustomSoundUrl || '').trim() || legacyCustom);
+                document.querySelectorAll('.time-fmt-opt').forEach(opt => {
+                    opt.classList.toggle('active', opt.dataset.fmt === (settings.timeFormat || 'HH:mm'));
+                });
+                const autoToggle = document.getElementById('auto-send-toggle');
+                if (autoToggle) autoToggle.classList.toggle('active', !!settings.autoSendEnabled);
+                updateAutoSendUI();
+                updateDelayUI();
+                const immToggle = document.getElementById('immersive-toggle');
+                if (immToggle) immToggle.classList.toggle('active', document.body.classList.contains('immersive-mode'));
+                const rrStyle = settings.readReceiptStyle || 'icon';
+                const rrIconBtn = document.getElementById('rr-style-icon');
+                const rrTextBtn = document.getElementById('rr-style-text');
+                if (rrIconBtn) { rrIconBtn.className = rrStyle === 'icon' ? 'modal-btn modal-btn-primary' : 'modal-btn modal-btn-secondary'; rrIconBtn.style.cssText = 'padding:5px 12px;font-size:12px;'; }
+                if (rrTextBtn) { rrTextBtn.className = rrStyle === 'text' ? 'modal-btn modal-btn-primary' : 'modal-btn modal-btn-secondary'; rrTextBtn.style.cssText = 'padding:5px 12px;font-size:12px;'; }
+                
+                showModal(DOMElements.chatModal.modal);
+                setupAvatarFrameSettings();
+            });
             const _advancedEl = document.getElementById('advanced-settings');
             if (_advancedEl) _advancedEl.addEventListener('click', () => {
                 hideModal(DOMElements.settingsModal.modal);
@@ -1113,6 +1113,30 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
                 });
             }
 
+            // ===== 对方主动写留言板开关 =====
+            const partnerBoardToggle = document.getElementById('partner-auto-board-toggle');
+            if (partnerBoardToggle) {
+                // 根据当前设置初始化开关样式
+                partnerBoardToggle.classList.toggle('active', !!settings.boardPartnerWriteEnabled);
+                
+                partnerBoardToggle.addEventListener('click', () => {
+                    // 切换状态
+                    settings.boardPartnerWriteEnabled = !settings.boardPartnerWriteEnabled;
+                    throttledSaveData();
+                    
+                    // 更新开关视觉
+                    partnerBoardToggle.classList.toggle('active', settings.boardPartnerWriteEnabled);
+                    
+                    // 提示用户
+                    showNotification(`对方主动写留言板已${settings.boardPartnerWriteEnabled ? '开启' : '关闭'}`, 'success');
+                    
+                    // 如果开启且当前留言板已加载，立即触发一次状态检查（以便可能立即生成新留言）
+                    if (settings.boardPartnerWriteEnabled && typeof checkEnvelopeStatus === 'function') {
+                        checkEnvelopeStatus();
+                    }
+                });
+            }
+
             for (const [selector, {
                 prop, name
             }] of Object.entries(settingToggles)) {
@@ -1349,7 +1373,22 @@ autoSendSlider.addEventListener('change', () => {
                     showNotification('已移除背景图', 'success');
                 });
             }
-        }
+        const partnerBoardToggle = document.getElementById('partner-auto-board-toggle');
+        if (partnerBoardToggle) {
+            // 初始化显示状态
+            partnerBoardToggle.classList.toggle('active', !!settings.boardPartnerWriteEnabled);
+            partnerBoardToggle.addEventListener('click', () => {
+                settings.boardPartnerWriteEnabled = !settings.boardPartnerWriteEnabled;
+                throttledSaveData();
+                partnerBoardToggle.classList.toggle('active', settings.boardPartnerWriteEnabled);
+                showNotification(`对方主动写留言板已${settings.boardPartnerWriteEnabled ? '开启' : '关闭'}`, 'success');
+                // 若开启且留言板当前无自动发布定时器，可立即触发一次检查
+                if (settings.boardPartnerWriteEnabled && typeof checkEnvelopeStatus === 'function') {
+                    checkEnvelopeStatus();
+                }
+            });
+        }                    
+    }
 
 
 

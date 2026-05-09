@@ -188,6 +188,7 @@ function loadMoreHistory() {
                 bottomCollapseMode: false,
                 emojiMixEnabled: true,
                 phraseCombiningEnabled: false,
+                boardPartnerWriteEnabled: false,   // 默认关闭
                 enterToSend: true,          // 默认回车发送
                 keepKeyboardAfterSend: false // 默认发送后不保留键盘
             };
@@ -1686,6 +1687,10 @@ if (!isBatchMode && type === 'normal') {
                 return;
             }
         
+            if (typeof window.loadEnvelopeData === 'function') {
+                window.loadEnvelopeData();   // 重新加载留言板数据，内部会调用 syncReplyPool
+            
+            }
             // 获取最近的几条用户消息（用于引用回复）
             const recentUserMsgs = settings.replyEnabled
                 ? messages.filter(m => m.sender === 'user' && m.text).slice(-10)
