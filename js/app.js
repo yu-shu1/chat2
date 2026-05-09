@@ -51,9 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         updateLoader('正在读取记忆存档...', '40%');
         await safeAwait(loadData());
-        
-        try { await loadEnvelopeData(); } catch(e) { console.warn('留言板数据加载失败', e); }
-        try { await checkEnvelopeStatus(); } catch(e) { console.warn('留言板状态检查失败', e); }
 
         updateLoader('正在渲染我们的世界...', '70%');
         

@@ -41,7 +41,8 @@
         let currentAnniversaryType = 'anniversary';
         let customThemes = [];
         let themeSchemes = []; 
-        let boardDataV2 = { myThreads: [], partnerThreads: [], boardReplyPool: [], unreadPartnerCount: 0, settings: { autoPostEnabled: false } };
+        let envelopeData = { outbox: [], inbox: [] };
+        window.envelopeData = envelopeData; // 暴露到全局
         const DOMElements = {
             html: document.documentElement,
             chatContainer: document.getElementById('chat-container'),
@@ -133,10 +134,7 @@
                 name: document.getElementById('partner-name'),
                 avatarContainer: document.getElementById('partner-avatar-container'), 
                 avatar: document.getElementById('partner-avatar'),
-                status: (() => {
-                    const el = document.getElementById('partner-status');
-                    return el ? (el.querySelector('span') || el) : document.createElement('span');
-                })()                
+                status: document.getElementById('partner-status').querySelector('span')
             },
             me: {
                 name: document.getElementById('my-name'),
@@ -182,5 +180,3 @@
                 closeBtn: document.getElementById('close-data')
             }
         };
-
-window.boardDataV2 = { myThreads: [], partnerThreads: [], boardReplyPool: [], settings: {} };
