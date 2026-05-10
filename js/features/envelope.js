@@ -400,12 +400,13 @@ window.viewEnvLetter = function(section, id) {
     const deleteBtn = document.getElementById('env-view-delete-btn');
     if (deleteBtn) {
         deleteBtn.onclick = () => {
-            deleteEnvLetter(null, section, id);
-            closeEnvViewModal();
-            renderEnvelopeLists();
+            if (confirm('确定要删除这条留言及其所有回复吗？')) {
+                deleteEnvLetter(null, section, id);
+                closeEnvViewModal();
+                renderEnvelopeLists();
+            }
         };
     }
-    
     // 回复列表内的“回复”按钮使用事件委托，在创建回复列表时绑定（见下方）
     
     if (repliesContainer) {
