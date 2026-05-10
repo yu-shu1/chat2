@@ -398,14 +398,23 @@ window.viewEnvLetter = function(section, id) {
     const deleteIcon = document.getElementById('env-view-delete-icon');
     if (deleteIcon) {
         deleteIcon.onclick = () => {
-            if (confirm('确定要删除这条留言及其所有回复吗？')) {
-                deleteEnvLetter(null, section, id);
-                closeEnvViewModal();
-                renderEnvelopeLists();
+            const isEditing = document.getElementById('env-view-edit').style.display !== 'none';
+            if (isEditing) {
+                if (confirm('正在编辑中，确定要删除并放弃修改吗？')) {
+                    deleteEnvLetter(null, section, id);
+                    closeEnvViewModal();
+                    renderEnvelopeLists();
+                }
+            } else {
+                if (confirm('确定要删除这条留言及其所有回复吗？')) {
+                    deleteEnvLetter(null, section, id);
+                    closeEnvViewModal();
+                    renderEnvelopeLists();
+                }
             }
         };
     }
-    
+
     // 右上角关闭图标
     const closeIcon = document.getElementById('env-view-close-icon');
     if (closeIcon) {
@@ -582,6 +591,7 @@ function handleSendEnvelope(parentId = null) {
         addMessage({ id: Date.now(), sender: 'user', text: `【留言板】\n${text}`, timestamp: new Date(), status: 'sent', type: 'normal' });
     }
 
+    // 正式值：6~12 小时
     const minHours = 6, maxHours = 12;
     const randomHours = Math.random() * (maxHours - minHours) + minHours;
     const replyTime = Date.now() + randomHours * 60 * 60 * 1000;
@@ -595,18 +605,17 @@ function handleSendEnvelope(parentId = null) {
         status: 'pending',
         parentId: parentId,
         createdAt: Date.now(),
-        replies: []      // 存储子回复的 id
+        replies: []
     };
     envelopeData.outbox.push(newMessage);
     
-    // 如果有父级，将当前消息 id 添加到父级的 replies 数组
     if (parentId) {
-    let parent = envelopeData.outbox.find(m => m.id === parentId);
-    if (!parent) parent = envelopeData.inbox.find(m => m.id === parentId);
-    if (parent) {
-        parent.replies = parent.replies || [];
-        parent.replies.push(newId);
-    }
+        let parent = envelopeData.outbox.find(m => m.id === parentId);
+        if (!parent) parent = envelopeData.inbox.find(m => m.id === parentId);
+        if (parent) {
+            parent.replies = parent.replies || [];
+            parent.replies.push(newId);
+        }
     }
     saveEnvelopeData();
 
@@ -614,6 +623,7 @@ function handleSendEnvelope(parentId = null) {
     switchEnvTab('outbox');
     showNotification(`留言已发送，预计 ${Math.floor(randomHours)} 小时后收到回复 ✉️`, 'success');
 }
+
 
 // ========== 主动留言板 ==========
 function initAutoMessageBoard() {
@@ -805,5 +815,8 @@ function refreshCurrentMessageView(messageId, messageSection) {
 
 window.addEventListener('beforeunload', function() {
     stopReplyCheck();
+    if (autoMessageBoardTimer) {
+        clearTimeout(autoMessageBoardTimer);
+        autoMessageBoardTimer = null;
+    }
 });
-
