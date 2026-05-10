@@ -1409,8 +1409,6 @@ if (mbAutoToggle) {
         galleryBanner.addEventListener('mouseup', () => { galleryBanner.style.transform = 'scale(1)'; });
         galleryBanner.addEventListener('mouseleave', () => { galleryBanner.style.transform = 'scale(1)'; });
     }
-const _sendEnvEl = document.getElementById('send-envelope');
-if (_sendEnvEl) _sendEnvEl.addEventListener('click', handleSendEnvelope);
 
 const _cancelEnvEl = document.getElementById('cancel-envelope');
 if (_cancelEnvEl) _cancelEnvEl.addEventListener('click', () => {
