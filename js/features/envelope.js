@@ -400,13 +400,12 @@ window.viewEnvLetter = function(section, id) {
     const deleteBtn = document.getElementById('env-view-delete-btn');
     if (deleteBtn) {
         deleteBtn.onclick = () => {
-            if (confirm('确定要删除这条留言及其所有回复吗？')) {
-                deleteEnvLetter(null, section, id);
-                closeEnvViewModal();
-                renderEnvelopeLists();
-            }
+            deleteEnvLetter(null, section, id);
+            closeEnvViewModal();
+            renderEnvelopeLists();
         };
     }
+    
     // 回复列表内的“回复”按钮使用事件委托，在创建回复列表时绑定（见下方）
     
     if (repliesContainer) {
@@ -678,14 +677,11 @@ window.openReplyForm = function(parentId, sourceSection, currentViewSection = nu
         window._replyParentId = null;
         window._replyCurrentSection = null;
         window._replyCurrentId = null;
-        cancelEnvelopeCompose();  // 关闭写留言表单，恢复列表视图
-        
-        // 执行成功回调（用于刷新当前详情页）
+        cancelEnvelopeCompose();
+    
         if (onSuccess && typeof onSuccess === 'function') {
-            onSuccess(tmpId, tmpSection);   // 注意顺序：id, section
-        }
+            onSuccess(tmpId, tmpSection);
         } else if (tmpSection && tmpId) {
-            // 兼容旧逻辑：重新打开详情（会关闭当前模态框）
             setTimeout(() => {
                 viewEnvLetter(tmpSection, tmpId);
             }, 200);
