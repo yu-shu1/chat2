@@ -2599,6 +2599,82 @@
             color: #ff5050;
         }
         
+                /* 留言详情中的回复列表样式 */
+        .env-view-replies {
+            margin-top: 20px;
+            padding: 12px 8px;
+            background: rgba(var(--accent-color-rgb), 0.03);
+            border-radius: 14px;
+            border: 1px solid rgba(var(--accent-color-rgb), 0.12);
+        }
+        
+        .env-reply-item {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            border-left: 3px solid var(--accent-color);
+            background: var(--primary-bg);
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        
+        .env-reply-item.level-1 {
+            margin-left: 20px;
+            border-left-color: rgba(var(--accent-color-rgb), 0.7);
+        }
+        .env-reply-item.level-2 {
+            margin-left: 40px;
+            border-left-color: rgba(var(--accent-color-rgb), 0.5);
+        }
+        .env-reply-item.level-3 {
+            margin-left: 60px;
+            border-left-color: rgba(var(--accent-color-rgb), 0.3);
+        }
+        
+        .env-reply-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+        
+        .env-reply-sender {
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        
+        .env-reply-time {
+            color: var(--text-secondary);
+            font-size: 11px;
+        }
+        
+        .env-reply-reply-btn {
+            margin-left: auto;
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 2px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        
+        .env-reply-reply-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+        
+        .env-reply-content {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        
         .new-badge {
             background: rgba(255, 80, 80, 0.8);
             color: white;
