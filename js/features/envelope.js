@@ -395,16 +395,21 @@ window.viewEnvLetter = function(section, id) {
     }
     
     // 在 viewEnvLetter 末尾，showModal 之前添加
-    const replyBtnInModal = document.getElementById('env-view-reply-btn');
-    if (replyBtnInModal) {
-        replyBtnInModal.onclick = () => {
+    // 显示并绑定追加回复按钮
+    const replyBtn = document.getElementById('env-view-reply-btn');
+    if (replyBtn) {
+        replyBtn.style.display = '';
+        replyBtn.onclick = () => {
             closeEnvViewModal();
             openReplyForm(id, section, section, id);
         };
     }
-    const deleteBtnInModal = document.getElementById('env-view-delete-btn');
-    if (deleteBtnInModal) {
-        deleteBtnInModal.onclick = () => {
+    
+    // 显示并绑定删除按钮
+    const deleteBtn = document.getElementById('env-view-delete-btn');
+    if (deleteBtn) {
+        deleteBtn.style.display = '';
+        deleteBtn.onclick = () => {
             if (confirm('确定要删除这条留言及其所有回复吗？')) {
                 deleteEnvLetter(null, section, id);
                 closeEnvViewModal();
