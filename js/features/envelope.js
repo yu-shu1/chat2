@@ -101,11 +101,11 @@ async function checkEnvelopeStatus() {
             
             newReplyLetter = inboxLetter;
             changed = true;
-            playSound('message');
+            if (typeof playSound === 'function') playSound('message');   // 检查函数是否存在
         }
     });
     
-if (changed) {
+    if (changed) {
         saveEnvelopeData();
         if (newReplyLetter) showEnvelopeReplyPopup(newReplyLetter);
         // 自动刷新留言板列表（如果模态框打开，实时更新）
@@ -345,10 +345,6 @@ window.viewEnvLetter = function(section, id) {
 
     renderReplies(letter);
 
-    // 绑定回复按钮的事件（委托）
-    // 在绑定回复按钮的事件中
-    
-    
     // ========== 新增结束 ==========
 
     const signDateEl = document.getElementById('env-view-sign-date');
@@ -667,7 +663,7 @@ async function addAutoMessageBoardEntry() {
     envelopeData.inbox.push(inboxLetter);
         await saveEnvelopeData();
         showEnvelopeReplyPopup(inboxLetter);
-        if (typeof playSound === 'function') playSound('message');
+        if (typeof playSound === 'function') playSound('message');   // 已经存在检查
         // 自动刷新留言板列表
         renderEnvelopeLists();
 }
