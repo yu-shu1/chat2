@@ -443,12 +443,12 @@ window.viewEnvLetter = function(section, id) {
     }    
     
     const oldEditBtn = document.getElementById('env-view-edit-btn');
-    if (oldEditBtn) oldEditBtn.style.display = 'none';
-    const editIcon = document.getElementById('env-view-edit-icon');
-    if (editIcon && oldEditBtn) {
-        editIcon.onclick = () => oldEditBtn.click();
-    }
-    
+if (oldEditBtn) oldEditBtn.style.display = 'none';
+// 复用前面已经声明的 editIcon 变量，不需要重新声明
+if (editIcon && oldEditBtn) {
+    editIcon.onclick = () => oldEditBtn.click();
+}
+
     // 回复列表内的“回复”按钮使用事件委托，在创建回复列表时绑定（见下方）
     
     if (repliesContainer) {
