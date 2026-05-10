@@ -189,8 +189,7 @@ function loadMoreHistory() {
                 emojiMixEnabled: true,
                 phraseCombiningEnabled: false,
                 enterToSend: true,          // 默认回车发送
-                keepKeyboardAfterSend: false, // 默认发送后不保留键盘
-                messageBoardAutoEnabled : false // 新增
+                keepKeyboardAfterSend: false // 默认发送后不保留键盘
             };
         }
 
@@ -424,7 +423,7 @@ const loadData = async () => {
         }
 
         try { await initMoodData(); } catch(e) { console.warn("心情数据加载失败", e); }
-        try { await loadEnvelopeData(); } catch(e) { console.warn("留言数据加载失败", e); }
+        try { await loadEnvelopeData(); } catch(e) { console.warn("信封数据加载失败", e); }
         
         displayedMessageCount = HISTORY_BATCH_SIZE;
         
@@ -435,9 +434,6 @@ const loadData = async () => {
             updateUI();
             if (settings.customBubbleCss) {
                 try { applyCustomBubbleCss(settings.customBubbleCss); } catch(e) {}
-            }
-            if (typeof window.initMessageBoard === 'function') {
-            window.initMessageBoard();
             }
         }, 100);
 
@@ -1697,8 +1693,8 @@ if (!isBatchMode && type === 'normal') {
                 let selected = [];
             
                 if (useCombine) {
-                    // 组合模式：随机选取 2~3 条不重复的字卡
-                    const combineCount = Math.floor(Math.random() * 2) + 2; // 2-3条
+                    // 组合模式：随机选取 1~3 条不重复的字卡
+                    const combineCount = Math.floor(Math.random() * 3) + 1; // 1-3
                     // 打乱池子并取前 combineCount 条（不重复）
                     const shuffled = [...replyPoolOnce];
                     for (let i = shuffled.length - 1; i > 0; i--) {

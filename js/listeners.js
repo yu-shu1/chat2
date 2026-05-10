@@ -1341,21 +1341,6 @@ autoSendSlider.addEventListener('change', () => {
     throttledSaveData();
 });
 
-// 主动写入留言板开关
-const mbAutoToggle = document.getElementById('message-board-auto-toggle');
-if (mbAutoToggle) {
-    mbAutoToggle.classList.toggle('active', settings.messageBoardAutoEnabled === true);
-    mbAutoToggle.addEventListener('click', () => {
-        settings.messageBoardAutoEnabled = !settings.messageBoardAutoEnabled;
-        throttledSaveData();
-        mbAutoToggle.classList.toggle('active', settings.messageBoardAutoEnabled);
-        if (typeof window.setMessageBoardAuto === 'function') {
-            window.setMessageBoardAuto(settings.messageBoardAutoEnabled);
-        }
-        showNotification(`主动留言板已${settings.messageBoardAutoEnabled ? '开启' : '关闭'}`, 'success');
-    });
-}
-
             const resetBgBtn = document.getElementById('reset-default-bg');
             if (resetBgBtn) {
                 resetBgBtn.addEventListener('click', () => {
@@ -1409,6 +1394,8 @@ if (mbAutoToggle) {
         galleryBanner.addEventListener('mouseup', () => { galleryBanner.style.transform = 'scale(1)'; });
         galleryBanner.addEventListener('mouseleave', () => { galleryBanner.style.transform = 'scale(1)'; });
     }
+const _sendEnvEl = document.getElementById('send-envelope');
+if (_sendEnvEl) _sendEnvEl.addEventListener('click', handleSendEnvelope);
 
 const _cancelEnvEl = document.getElementById('cancel-envelope');
 if (_cancelEnvEl) _cancelEnvEl.addEventListener('click', () => {
