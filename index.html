@@ -315,74 +315,73 @@
             </div>
         </div>
     </div>
-
 <div class="modal" id="envelope-modal">
     <div class="modal-content" style="max-height:92vh; padding:0; overflow:hidden; background:transparent;">
-        <div class="env-wrapper">
-            <!-- 头部 -->
-            <div class="env-header-flap">
-                <svg class="env-header-icon" width="40" height="30" viewBox="0 0 40 30" fill="none">...</svg>
-                <div class="env-header-title">留 言 板</div>
-                <div class="env-header-subtitle">Message Board</div>
-            </div>
+    <div class="env-wrapper">
+        <div class="env-header-flap">
+            <svg class="env-header-icon" width="40" height="30" viewBox="0 0 40 30" fill="none">
+                <rect x="1" y="7" width="38" height="22" rx="3" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                <path d="M1 9 L20 20 L39 9" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" fill="none"/>
+                <path d="M1 29 L14 18" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+                <path d="M39 29 L26 18" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+            </svg>
+            <div class="env-header-title">信 封 投 递</div>
+            <div class="env-header-subtitle">Letters · Correspondence</div>
+        </div>
 
-            <div class="env-body">
-                <!-- 标签页 -->
-                <div class="env-tab-bar">
-                    <button class="env-tab-btn active" id="env-tab-outbox" onclick="switchEnvTab('outbox')">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:4px;"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>我的留言
-                        <span id="env-outbox-badge" class="env-badge" style="display:none;"></span>
-                    </button>
-                    <button class="env-tab-btn" id="env-tab-inbox" onclick="switchEnvTab('inbox')">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:4px;"><path d="M22 13V19a2 2 0 01-2 2H4a2 2 0 01-2-2v-6"/><polyline points="15 3 21 3 21 9"/><line x1="21" y1="3" x2="10" y2="14"/></svg>收到的留言
-                        <span id="env-inbox-badge" class="env-badge" style="display:none;"></span>
-                    </button>
-                </div>
-                
-                <!-- 我的留言列表 -->
-                <div id="env-outbox-section">
-                    <div id="env-outbox-list"></div>
-                </div>
-                
-                <!-- 收到的留言列表 -->
-                <div id="env-inbox-section" style="display:none;">
-                    <div id="env-inbox-list"></div>
-                </div>
-                
-                <!-- 写留言表单 -->
-                <div id="env-compose-form" style="display:none;">
-                    <div class="env-compose-paper">
-                        <div class="env-compose-heading">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                            <span id="env-compose-title">写留言</span>
-                        </div>
-                        <textarea id="envelope-input" placeholder="亲爱的，&#10;&#10;今天想跟你说..."></textarea>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px; margin:4px 0 6px; font-size:12px; padding: 0 2px;">
-                        <input type="checkbox" id="env-send-to-chat" style="width:15px;height:15px; cursor:pointer; accent-color:var(--accent-color);">
-                        <label for="env-send-to-chat" style="cursor:pointer; color:var(--text-secondary);">同时发送到聊天记录</label>
-                    </div>
-                    <div class="env-send-info">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        <span id="env-reply-time-info">对方将在 6-12 小时内回复（3-6 句话）</span>
-                    </div>
-                    <div style="display:flex;gap:8px;">
-                        <button class="modal-btn modal-btn-secondary" id="cancel-compose" onclick="cancelEnvelopeCompose()" style="flex:1;">取消</button>
-                        <button class="modal-btn modal-btn-primary" id="send-envelope" style="flex:2;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px;"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>发送留言
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="env-send-area" id="env-main-close-btn">
-                <button class="env-write-btn" id="new-envelope-btn" onclick="openNewEnvelopeForm()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                    提笔留言
+        <div class="env-body">
+            <div class="env-tab-bar">
+                <button class="env-tab-btn active" id="env-tab-outbox" onclick="switchEnvTab('outbox')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:4px;"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>寄出的信
+                    <span id="env-outbox-badge" class="env-badge" style="display:none;"></span>
                 </button>
-                <button class="env-close-btn" id="cancel-envelope">关闭</button>
+                <button class="env-tab-btn" id="env-tab-inbox" onclick="switchEnvTab('inbox')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:4px;"><path d="M22 13V19a2 2 0 01-2 2H4a2 2 0 01-2-2v-6"/><polyline points="15 3 21 3 21 9"/><line x1="21" y1="3" x2="10" y2="14"/></svg>收到的信
+                    <span id="env-inbox-badge" class="env-badge" style="display:none;"></span>
+                </button>
+            </div>
+
+            <div id="env-outbox-section">
+                <div id="env-outbox-list"></div>
+            </div>
+
+            <div id="env-inbox-section" style="display:none;">
+                <div id="env-inbox-list"></div>
+            </div>
+
+            <div id="env-compose-form" style="display:none;">
+                <div class="env-compose-paper">
+                    <div class="env-compose-heading">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        <span id="env-compose-title">写一封信</span>
+                    </div>
+                    <textarea id="envelope-input" placeholder="亲爱的，&#10;&#10;今天想跟你说..."></textarea>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin:4px 0 6px; font-size:12px; padding: 0 2px;">
+                    <input type="checkbox" id="env-send-to-chat" style="width:15px;height:15px; cursor:pointer; accent-color:var(--accent-color);">
+                    <label for="env-send-to-chat" style="cursor:pointer; color:var(--text-secondary);">同时发送到聊天记录</label>
+                </div>
+                <div class="env-send-info">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span id="env-reply-time-info">对方将在 10-24 小时内回信（8-12 句话）</span>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button class="modal-btn modal-btn-secondary" id="cancel-compose" onclick="cancelEnvelopeCompose()" style="flex:1;">取消</button>
+                    <button class="modal-btn modal-btn-primary" id="send-envelope" style="flex:2;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px;"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>封 · 寄出
+                    </button>
+                </div>
             </div>
         </div>
+
+        <div class="env-send-area" id="env-main-close-btn">
+            <button class="env-write-btn" id="new-envelope-btn" onclick="openNewEnvelopeForm()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                提笔写信
+            </button>
+            <button class="env-close-btn" id="cancel-envelope">关闭</button>
+        </div>
+    </div>
     </div>
 </div>
 
@@ -390,66 +389,55 @@
     <div class="modal-content" style="overflow:hidden;padding:0;background:transparent;max-height:92vh;display:flex;flex-direction:column;">
     <div style="background:var(--secondary-bg);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;max-height:92vh;">
         <div style="background:var(--accent-color);padding:0;position:relative;overflow:hidden;flex-shrink:0;">
+            <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,0.04) 0px,rgba(255,255,255,0.04) 2px,transparent 2px,transparent 12px);pointer-events:none;"></div>
             <div style="position:relative;padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between;">
                 <div style="display:flex;align-items:center;gap:10px;color:white;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
-                    <span id="env-view-title" style="font-size:14px;font-weight:700;letter-spacing:2px;">留言内容</span>
-                </div>
-                <div style="display:flex;gap:12px;align-items:center;">
-                    <!-- 编辑按钮 -->
-                    <button id="env-view-edit-icon" class="env-view-icon-btn" title="编辑" style="background:none;border:none;cursor:pointer;color:white;font-size:16px;padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background 0.2s;">
-                        <i class="fas fa-pencil-alt"></i>
-                    </button>
-                    <!-- 删除按钮 -->
-                    <button id="env-view-delete-icon" class="env-view-icon-btn" title="删除" style="background:none;border:none;cursor:pointer;color:white;font-size:16px;padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background 0.2s;">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                    <!-- 关闭按钮 -->
-                    <button id="env-view-close-icon" class="env-view-icon-btn" title="关闭" style="background:none;border:none;cursor:pointer;color:white;font-size:16px;padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background 0.2s;">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <span id="env-view-title" style="font-size:14px;font-weight:700;letter-spacing:2px;">信件内容</span>
                 </div>
             </div>
         </div>
 
-
+        <!-- 这是 envelope-view-modal 里面的内容区域 -->
         <div style="padding:0;overflow-y:auto;flex:1;min-height:0;">
-            <div id="env-view-content" style="display:none;">
-                <div id="env-view-original-ctx" style="display:none;margin:14px 16px 0;background:rgba(var(--accent-color-rgb),0.06);border:1px solid rgba(var(--accent-color-rgb),0.18);border-radius:10px;padding:10px 14px;border-left:3px solid rgba(var(--accent-color-rgb),0.5);">
-                    <div style="font-size:10px;color:var(--accent-color);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;opacity:0.8;display:flex;align-items:center;gap:5px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>你的原留言</div>
-                    <div id="env-view-original-text" style="font-size:12.5px;color:var(--text-secondary);line-height:1.7;font-style:italic;white-space:pre-wrap;word-break:break-word;max-height:80px;overflow:hidden;position:relative;"></div>
-                    <div id="env-view-original-expand" style="font-size:11px;color:var(--accent-color);margin-top:5px;cursor:pointer;display:none;" onclick="(function(){var t=document.getElementById('env-view-original-text');t.style.maxHeight=t.style.maxHeight==='none'?'80px':'none';document.getElementById('env-view-original-expand').textContent=t.style.maxHeight==='none'?'收起':'展开查看全文';})()">展开查看全文</div>
-                </div>
-                <div style="background:var(--primary-bg);margin:14px 16px 16px;border-radius:12px;border:1px solid var(--border-color);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-                    <div style="height:6px;background:linear-gradient(90deg,var(--accent-color),rgba(var(--accent-color-rgb),0.4),var(--accent-color));"></div>
-                    <div style="padding:20px 20px 16px;position:relative;">
-                        <div style="position:absolute;left:52px;top:0;bottom:0;width:1px;background:rgba(220,80,80,0.15);pointer-events:none;"></div>
-                        <div style="position:absolute;inset:0;background:repeating-linear-gradient(transparent,transparent 31px,rgba(var(--accent-color-rgb),0.06) 31px,rgba(var(--accent-color-rgb),0.06) 32px);pointer-events:none;border-radius:12px;"></div>
-                        
-                        <div style="position:relative;z-index:1;">
-                            <div id="env-view-date-line" style="font-size:11px;color:var(--text-secondary);text-align:right;margin-bottom:16px;letter-spacing:1px;opacity:0.8;font-style:italic;"></div>
-                            <div id="env-view-to-line" style="font-size:13px;color:var(--text-primary);margin-bottom:4px;font-weight:500;"></div>
-                            <div id="env-view-greeting-line" style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;font-style:italic;opacity:0.8;"></div>
-                            <div id="env-view-text" class="env-letter-paper" style="border:none;background:transparent;padding:0 0 0 8px;line-height:32px;margin-bottom:16px;"></div>
-                            <div style="border-top:1px dashed rgba(var(--accent-color-rgb),0.25);margin:12px 0;"></div>
-                            <div id="env-view-sign-date" style="font-size:11px;color:var(--text-secondary);text-align:right;margin-bottom:4px;letter-spacing:0.5px;"></div>
-                            <div id="env-view-sign-name" style="font-size:14px;color:var(--accent-color);text-align:right;font-weight:600;letter-spacing:1px;"></div>
-                        </div>
+            <!-- 信件详情区域 (可编辑的我方内容) -->
+            <div id="env-view-content">
+                <!-- 显示"标题"和"右上角编辑/删除按钮"的头部 -->
+                <div style="display:flex; justify-content:space-between; align-items:center; padding: 12px 16px; border-bottom: 1px solid var(--border-color);">
+                    <div style="font-weight:bold;" id="env-view-subject">信件标题</div>
+                    <div>
+                        <button id="env-view-edit-btn" style="background:none;border:none;padding:5px;cursor:pointer;"><i class="fas fa-pen"></i></button>
+                        <button id="env-view-delete-btn" style="background:none;border:none;padding:5px;cursor:pointer; color:#ff4757;"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
-            </div>
-            <div id="env-view-edit" style="display:none;padding:16px;">
-                <div class="env-compose-paper" style="padding:14px;">
-                    <textarea class="modal-textarea" id="env-edit-input" style="height:160px;background:transparent;border:none;outline:none;font-family:var(--font-family);font-size:14px;line-height:1.9;width:100%;resize:none;"></textarea>
+                
+                <!-- 可编辑的我方信件正文区域 -->
+                <div id="env-view-edit-area" style="display:none; padding: 12px 16px;">
+                    <textarea id="env-edit-input" style="width:100%; height:150px; background:var(--primary-bg); color:var(--text-primary); border-radius:12px; padding:10px;"></textarea>
+                    <button id="env-view-save-btn" style="margin-top:8px; padding:8px 16px; background:var(--accent-color); color:#fff; border:none; border-radius:8px;">保 存</button>
+                </div>
+                
+                <!-- 显示正文（不可编辑时） -->
+                <div id="env-view-body" style="padding: 16px;">
+                    <div id="env-view-text" style="white-space:pre-wrap; line-height:1.8; font-size:15px;"></div>
                 </div>
             </div>
-        </div>
         
-        <div class="modal-buttons" style="margin:0;padding:12px 18px 16px;border-top:1px solid var(--border-color);flex-shrink:0;display:flex;gap:10px;">
-            <!-- 继续留言按钮（始终显示） -->
-            <button class="modal-btn modal-btn-primary" id="env-view-reply-btn" style="flex:2;">继续留言</button>
-            <!-- 关闭按钮（可选，保留一个） -->
-            <button class="modal-btn modal-btn-secondary" id="close-env-view-bottom" style="flex:1;">关闭</button>
+            <!-- 回复列表区域（对话串） -->
+            <div id="env-reply-thread" style="padding:0 16px 16px; display:flex; flex-direction:column; gap:8px;">
+                <!-- 这里会动态插入每一条回复气泡 -->
+            </div>
+            
+            <!-- 追加回复输入框 -->
+            <div id="env-reply-input-area" style="display:flex; gap:8px; padding: 0 16px 16px;">
+                <textarea id="env-reply-input" placeholder="追加回复..." style="flex:1; background:var(--primary-bg); color:var(--text-primary); border-radius:12px; padding:8px;"></textarea>
+                <button id="env-send-reply-btn" style="padding:0 16px; background:var(--accent-color); color:#fff; border:none; border-radius:12px; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+
+        <div class="modal-buttons" style="margin:0;padding:12px 18px 16px;border-top:1px solid var(--border-color);flex-shrink:0;">
+            <button class="modal-btn modal-btn-secondary" id="close-env-view" onclick="closeEnvViewModal()">关闭</button>
         </div>
     </div>
     </div>
@@ -1079,13 +1067,6 @@
                                 <span class="cs-slider-val" id="auto-send-value">5分钟</span>
                             </div>
                         </div>
-                        <div class="setting-pill-row" id="message-board-auto-toggle">
-                            <span class="setting-pill-icon"><i class="fas fa-envelope"></i></span>
-                            <span class="setting-pill-label">主动写入留言板 
-                                <span style="font-size:11px;color:var(--text-secondary);font-weight:400;">开启后对方可能主动留言</span>
-                            </span>
-                            <div class="setting-pill-switch"><div class="setting-pill-knob"></div></div>
-                        </div>
                     </div>
 
                     <p class="cs-group-label" style="margin-top:4px;">消息节奏</p>
@@ -1347,7 +1328,7 @@
                         <i class="fas fa-calendar-day"></i><span>心晴手账</span>
                     </div>
                     <div class="settings-item" id="envelope-function">
-                        <i class="fas fa-envelope"></i><span>留言板</span>
+                        <i class="fas fa-envelope"></i><span>信封投递</span>
                     </div>
                 </div>
             </div>
