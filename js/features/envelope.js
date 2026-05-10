@@ -6,6 +6,24 @@ let autoMessageBoardTimer = null;      // 主动留言定时器
 let replyCheckInterval = null;
 window._replyParentId = null;
 
+// 防止 XSS 攻击
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// 根据 ID 查找留言（跨 outbox/inbox）
+function findMessageById(id) {
+    let msg = envelopeData.outbox.find(m => m.id === id);
+    if (!msg) msg = envelopeData.inbox.find(m => m.id === id);
+    return msg;
+}
+
 async function loadEnvelopeData() {
     const saved = await localforage.getItem(getStorageKey('envelopeData'));
     if (saved) envelopeData = saved;
@@ -275,6 +293,73 @@ window.viewEnvLetter = function(section, id) {
     const textEl = document.getElementById('env-view-text');
     if (textEl) textEl.textContent = letter.content;
 
+    // ========== 新增：渲染回复列表 ==========
+    let repliesContainer = document.getElementById('env-view-replies-container');
+    if (!repliesContainer) {
+        repliesContainer = document.createElement('div');
+        repliesContainer.id = 'env-view-replies-container';
+        repliesContainer.className = 'env-view-replies';
+        // 插入到文字内容的下方，签名之前
+        const signDateParent = document.getElementById('env-view-sign-date')?.parentNode;
+        if (signDateParent) {
+            signDateParent.insertBefore(repliesContainer, document.getElementById('env-view-sign-date'));
+        } else {
+            // 降级：直接追加到 env-view-text 后面
+            textEl.parentNode.appendChild(repliesContainer);
+        }
+    } else {
+        repliesContainer.innerHTML = '';
+    }
+
+    // 递归渲染所有回复
+    function renderReplies(parentMsg, level = 0) {
+        if (!parentMsg.replies || parentMsg.replies.length === 0) return;
+        const replyIds = [...parentMsg.replies];
+        const replies = replyIds.map(rid => findMessageById(rid)).filter(r => r);
+        // 按时间排序（时间早的在上方）
+        replies.sort((a, b) => (a.sentTime || a.receivedTime) - (b.sentTime || b.receivedTime));
+        
+        for (const reply of replies) {
+            const isMyReply = reply.sentTime !== undefined;
+            const senderName = isMyReply ? (settings.myName || '我') : (settings.partnerName || '对方');
+            const replyTime = new Date(reply.sentTime || reply.receivedTime).toLocaleString('zh-CN', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            });
+            const replyDiv = document.createElement('div');
+            replyDiv.className = `env-reply-item level-${Math.min(level, 3)}`; // 最多缩进3层
+            replyDiv.innerHTML = `
+                <div class="env-reply-header">
+                    <span class="env-reply-sender">${escapeHtml(senderName)}</span>
+                    <span class="env-reply-time">${escapeHtml(replyTime)}</span>
+                    <button class="env-reply-reply-btn" data-reply-id="${reply.id}" data-section="${isMyReply ? 'outbox' : 'inbox'}">回复</button>
+                </div>
+                <div class="env-reply-content">${escapeHtml(reply.content)}</div>
+            `;
+            repliesContainer.appendChild(replyDiv);
+            // 递归处理子回复
+            renderReplies(reply, level + 1);
+        }
+    }
+
+    renderReplies(letter);
+
+    // 绑定回复按钮的事件（委托）
+    // 在绑定回复按钮的事件中
+    repliesContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.env-reply-reply-btn');
+        if (btn) {
+            e.stopPropagation();
+            const replyId = btn.dataset.replyId;
+            const replySection = btn.dataset.section;
+            closeEnvViewModal();
+            openReplyForm(replyId, replySection, section, id);  // 传入当前查看的 section 和 id
+        }
+    });
+    
+    
+    // ========== 新增结束 ==========
+
     const signDateEl = document.getElementById('env-view-sign-date');
     const signNameEl = document.getElementById('env-view-sign-name');
     if (signDateEl) signDateEl.textContent = fullDateStr;
@@ -291,6 +376,7 @@ window.viewEnvLetter = function(section, id) {
     document.getElementById('env-view-edit').style.display = 'none';
     document.getElementById('env-view-edit-btn').style.display = 'inline-flex';
     document.getElementById('env-view-save-btn').style.display = 'none';
+    
     const origCtx = document.getElementById('env-view-original-ctx');
     const origText = document.getElementById('env-view-original-text');
     const origExpand = document.getElementById('env-view-original-expand');
@@ -308,34 +394,24 @@ window.viewEnvLetter = function(section, id) {
         }
     }
     
-    // 获取按钮
-    const replyBtn = document.getElementById('env-view-reply-btn');
-    const deleteBtn = document.getElementById('env-view-delete-btn');
-    
-    // 显示按钮
-    if (replyBtn) replyBtn.style.display = '';
-    if (deleteBtn) deleteBtn.style.display = '';
-    
-    // 绑定回复事件（始终允许回复任何留言）
-    if (replyBtn) {
-        replyBtn.onclick = () => {
-            // 关闭当前详情窗，打开追加回复表单
+    // 在 viewEnvLetter 末尾，showModal 之前添加
+    const replyBtnInModal = document.getElementById('env-view-reply-btn');
+    if (replyBtnInModal) {
+        replyBtnInModal.onclick = () => {
             closeEnvViewModal();
-            openReplyForm(id, section);
+            openReplyForm(id, section, section, id);
         };
     }
-    
-    // 绑定删除事件
-    if (deleteBtn) {
-        deleteBtn.onclick = () => {
-            const confirmed = confirm('确定要删除这条留言及其所有回复吗？');
-            if (confirmed) {
+    const deleteBtnInModal = document.getElementById('env-view-delete-btn');
+    if (deleteBtnInModal) {
+        deleteBtnInModal.onclick = () => {
+            if (confirm('确定要删除这条留言及其所有回复吗？')) {
                 deleteEnvLetter(null, section, id);
                 closeEnvViewModal();
                 renderEnvelopeLists();
             }
         };
-    }    
+    }
     
     showModal(document.getElementById('envelope-view-modal'));
 };
@@ -446,8 +522,11 @@ window.cancelEnvelopeCompose = function() {
     }
     // 重置回复状态
     window._replyParentId = null;
+    // 确保发送按钮初始绑定普通留言发送
     const sendBtn = document.getElementById('send-envelope');
-    sendBtn.onclick = () => handleSendEnvelope(null);
+    if (sendBtn) {
+        sendBtn.onclick = () => handleSendEnvelope(null);
+    }
 };
 
 // 改造发送函数，接受 parentId 参数
@@ -565,7 +644,11 @@ window.addEventListener('beforeunload', function() {
     stopReplyCheck();
 });
 
-window.openReplyForm = function(parentId, sourceSection) {
+window.openReplyForm = function(parentId, sourceSection, currentViewSection = null, currentViewId = null) {
+    // 保存当前查看的留言信息，用于刷新
+    window._currentViewSection = currentViewSection;
+    window._currentViewId = currentViewId;
+    
     // 隐藏当前列表，显示写留言表单
     document.getElementById('env-outbox-section').style.display = 'none';
     document.getElementById('env-inbox-section').style.display = 'none';
@@ -575,19 +658,23 @@ window.openReplyForm = function(parentId, sourceSection) {
     document.getElementById('env-send-to-chat').checked = false;
     document.getElementById('env-compose-form').style.display = 'block';
     
-    // 存储父级ID到全局，发送时使用
     window._replyParentId = parentId;
     
-    // 临时覆盖发送按钮行为
     const sendBtn = document.getElementById('send-envelope');
     const originalClick = sendBtn.onclick;
     sendBtn.onclick = () => {
         handleSendEnvelope(window._replyParentId);
-        // 恢复原来的发送行为（普通留言）
         sendBtn.onclick = originalClick;
         window._replyParentId = null;
-        // 重新显示列表
         cancelEnvelopeCompose();
+        // 如果之前是从某个留言详情打开的，则刷新该留言详情
+        if (window._currentViewSection && window._currentViewId) {
+            setTimeout(() => {
+                viewEnvLetter(window._currentViewSection, window._currentViewId);
+            }, 200);
+            window._currentViewSection = null;
+            window._currentViewId = null;
+        }
     };
 };
 
@@ -605,4 +692,3 @@ function stopReplyCheck() {
         replyCheckInterval = null;
     }
 }
-
