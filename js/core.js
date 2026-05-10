@@ -1697,8 +1697,8 @@ if (!isBatchMode && type === 'normal') {
                 let selected = [];
             
                 if (useCombine) {
-                    // 组合模式：随机选取 1~3 条不重复的字卡
-                    const combineCount = Math.floor(Math.random() * 3) + 1; // 1-3
+                    // 组合模式：随机选取 2~3 条不重复的字卡
+                    const combineCount = Math.floor(Math.random() * 2) + 2; // 2-3条
                     // 打乱池子并取前 combineCount 条（不重复）
                     const shuffled = [...replyPoolOnce];
                     for (let i = shuffled.length - 1; i > 0; i--) {
