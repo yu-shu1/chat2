@@ -1,7 +1,3 @@
-if (typeof messages === 'undefined') window.messages = [];
-if (typeof settings === 'undefined') window.settings = { myName: '我', partnerName: '对方' };
-if (typeof DOMElements === 'undefined') window.DOMElements = {};
-
 function renderStatsContent() {
             const statsContent = DOMElements.statsModal.content;
 

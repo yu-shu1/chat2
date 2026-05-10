@@ -41,8 +41,6 @@
         let currentAnniversaryType = 'anniversary';
         let customThemes = [];
         let themeSchemes = []; 
-        let envelopeData = { outbox: [], inbox: [] };
-        window.envelopeData = envelopeData; // 暴露到全局
         const DOMElements = {
             html: document.documentElement,
             chatContainer: document.getElementById('chat-container'),

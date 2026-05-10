@@ -1319,41 +1319,6 @@ const updateAutoSendUI = () => {
 
 updateAutoSendUI();
 
-// 主动留言板开关
-const autoEnvToggle = document.getElementById('auto-envelope-toggle');
-if (autoEnvToggle) {
-    autoEnvToggle.classList.toggle('active', !!settings.autoEnvelopeEnabled);
-    autoEnvToggle.addEventListener('click', () => {
-        settings.autoEnvelopeEnabled = !settings.autoEnvelopeEnabled;
-        throttledSaveData();
-        updateEnvelopeAutoUI();
-        if (settings.autoEnvelopeEnabled) scheduleAutoEnvelope();
-        else clearTimeout(autoEnvelopeTimer);
-        showNotification(`主动留言已${settings.autoEnvelopeEnabled ? '开启' : '关闭'}`, 'success');
-    });
-}
-
-const autoEnvSlider = document.getElementById('auto-envelope-slider');
-const autoEnvVal = document.getElementById('auto-envelope-value');
-const updateEnvelopeAutoUI = () => {
-    const ctrl = document.getElementById('auto-envelope-control');
-    if (ctrl) ctrl.style.display = settings.autoEnvelopeEnabled ? 'flex' : 'none';
-    if (autoEnvSlider) autoEnvSlider.value = settings.autoEnvelopeInterval || 5;
-    if (autoEnvVal) autoEnvVal.textContent = (settings.autoEnvelopeInterval || 5) + 'h';
-};
-if (autoEnvSlider) {
-    autoEnvSlider.addEventListener('input', e => {
-        settings.autoEnvelopeInterval = parseFloat(e.target.value);
-        autoEnvVal.textContent = e.target.value + 'h';
-    });
-    autoEnvSlider.addEventListener('change', () => {
-        scheduleAutoEnvelope();
-        throttledSaveData();
-    });
-}
-// 初始UI
-setTimeout(updateEnvelopeAutoUI, 600);
-
 autoSendToggle.addEventListener('click', () => {
     settings.autoSendEnabled = !settings.autoSendEnabled;
     updateAutoSendUI();
@@ -1375,6 +1340,21 @@ autoSendSlider.addEventListener('change', () => {
     scheduleAutoSend();
     throttledSaveData();
 });
+
+// 主动写入留言板开关
+const mbAutoToggle = document.getElementById('message-board-auto-toggle');
+if (mbAutoToggle) {
+    mbAutoToggle.classList.toggle('active', settings.messageBoardAutoEnabled === true);
+    mbAutoToggle.addEventListener('click', () => {
+        settings.messageBoardAutoEnabled = !settings.messageBoardAutoEnabled;
+        throttledSaveData();
+        mbAutoToggle.classList.toggle('active', settings.messageBoardAutoEnabled);
+        if (typeof window.setMessageBoardAuto === 'function') {
+            window.setMessageBoardAuto(settings.messageBoardAutoEnabled);
+        }
+        showNotification(`主动留言板已${settings.messageBoardAutoEnabled ? '开启' : '关闭'}`, 'success');
+    });
+}
 
             const resetBgBtn = document.getElementById('reset-default-bg');
             if (resetBgBtn) {
