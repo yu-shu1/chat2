@@ -386,24 +386,58 @@ window.viewEnvLetter = function(section, id) {
     }
     
     // 在 viewEnvLetter 末尾，showModal 之前添加
-    // 追加回复按钮
-    const replyBtn = document.getElementById('env-view-reply-btn');
-    if (replyBtn) {
-        replyBtn.onclick = () => {
+    // 右上角编辑图标
+    const editIcon = document.getElementById('env-view-edit-icon');
+    if (editIcon) {
+        editIcon.onclick = () => {
+            toggleEnvEdit();
+        };
+    }
+    
+    // 右上角删除图标
+    const deleteIcon = document.getElementById('env-view-delete-icon');
+    if (deleteIcon) {
+        deleteIcon.onclick = () => {
+            if (confirm('确定要删除这条留言及其所有回复吗？')) {
+                deleteEnvLetter(null, section, id);
+                closeEnvViewModal();
+                renderEnvelopeLists();
+            }
+        };
+    }
+    
+    // 右上角关闭图标
+    const closeIcon = document.getElementById('env-view-close-icon');
+    if (closeIcon) {
+        closeIcon.onclick = () => {
+            closeEnvViewModal();
+        };
+    }
+    
+    // 底部关闭按钮（新）
+    const closeBottomBtn = document.getElementById('close-env-view-bottom');
+    if (closeBottomBtn) {
+        closeBottomBtn.onclick = () => {
+            closeEnvViewModal();
+        };
+    }
+    
+    // 底部“继续留言”按钮（原追加回复）
+    const replyBottomBtn = document.getElementById('env-view-reply-btn');
+    if (replyBottomBtn) {
+        replyBottomBtn.onclick = () => {
             openReplyForm(id, section, section, id, () => {
                 refreshCurrentMessageView(id, section);
             });
         };
-    }
+        replyBottomBtn.style.display = '';  // 确保可见
+    }    
     
-    // 删除按钮
-    const deleteBtn = document.getElementById('env-view-delete-btn');
-    if (deleteBtn) {
-        deleteBtn.onclick = () => {
-            deleteEnvLetter(null, section, id);
-            closeEnvViewModal();
-            renderEnvelopeLists();
-        };
+    const oldEditBtn = document.getElementById('env-view-edit-btn');
+    if (oldEditBtn) oldEditBtn.style.display = 'none';
+    const editIcon = document.getElementById('env-view-edit-icon');
+    if (editIcon && oldEditBtn) {
+        editIcon.onclick = () => oldEditBtn.click();
     }
     
     // 回复列表内的“回复”按钮使用事件委托，在创建回复列表时绑定（见下方）
