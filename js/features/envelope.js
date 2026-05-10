@@ -156,7 +156,11 @@ function renderOutboxList() {
     const list = document.getElementById('env-outbox-list');
     if (!list) return;
     if (envelopeData.outbox.length === 0) {
-        list.innerHTML = `<div class="env-empty">...</div>`; // 保持原有空状态
+    list.innerHTML = `<div class="env-empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
+            <div style="font-size:14px;font-weight:500;margin-top:4px;">还没有发送留言</div>
+            <div style="font-size:12px;margin-top:6px;opacity:0.6;">提笔写下给Ta的留言吧~</div>
+        </div>`;
         return;
     }
     list.innerHTML = envelopeData.outbox.slice().reverse().map(letter => {
@@ -174,7 +178,7 @@ function renderOutboxList() {
         const preview = letter.content.length > 38 ? letter.content.substring(0, 38) + '…' : letter.content;
         
         return `
-        <div class="env-letter-item" data-id="${letter.id}">
+        <div class="env-letter-item" data-id="${letter.id}" onclick="viewEnvLetter('outbox','${letter.id}')">
             <div class="env-letter-header">
                 <div class="env-letter-header-from">
                     <i class="fas fa-pen"></i> 留言 · ${date}
@@ -185,14 +189,6 @@ function renderOutboxList() {
                 <div class="env-letter-preview">${preview}</div>
                 <div class="env-letter-status">${statusIcon} ${statusText}</div>
             </div>
-            <div class="env-letter-actions">
-                <button class="env-letter-reply-btn" onclick="event.stopPropagation(); openReplyForm('${letter.id}', 'outbox')" title="追加回复">
-                    <i class="fas fa-reply"></i> 回复
-                </button>
-                <button class="env-letter-delete-btn" onclick="deleteEnvLetter(event,'outbox','${letter.id}')">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
         </div>`;
     }).join('');
 }
@@ -201,7 +197,11 @@ function renderInboxList() {
     const list = document.getElementById('env-inbox-list');
     if (!list) return;
     if (envelopeData.inbox.length === 0) {
-        list.innerHTML = `<div class="env-empty">...</div>`;
+    list.innerHTML = `<div class="env-empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/><polyline points="22 13 12 13"/><path d="M19 16l-5-3-5 3"/></svg>
+            <div style="font-size:14px;font-weight:500;margin-top:4px;">还没有收到留言</div>
+            <div style="font-size:12px;margin-top:6px;opacity:0.6;">对方正在认真回复中，请稍候~</div>
+        </div>`;
         return;
     }
     list.innerHTML = envelopeData.inbox.slice().reverse().map(letter => {
@@ -214,7 +214,7 @@ function renderInboxList() {
         const origPreview = letter.originalContent ? (letter.originalContent.length > 32 ? letter.originalContent.substring(0,32)+'…' : letter.originalContent) : '';
         
         return `
-        <div class="env-letter-item reply ${isNew ? 'env-letter-new' : ''}" data-id="${letter.id}">
+        <div class="env-letter-item reply ${isNew ? 'env-letter-new' : ''}" data-id="${letter.id}" onclick="viewEnvLetter('inbox','${letter.id}')">
             <div class="env-letter-header">
                 <div class="env-letter-header-from">
                     <i class="fas fa-inbox"></i> 收到 · ${date}
@@ -225,14 +225,6 @@ function renderInboxList() {
             ${origPreview ? `<div class="orig-preview">你的留言: ${origPreview}</div>` : ''}
             <div class="env-letter-body">
                 <div class="env-letter-preview">${preview}</div>
-            </div>
-            <div class="env-letter-actions">
-                <button class="env-letter-reply-btn" onclick="event.stopPropagation(); openReplyForm('${letter.id}', 'inbox')" title="追加回复">
-                    <i class="fas fa-reply"></i> 回复
-                </button>
-                <button class="env-letter-delete-btn" onclick="deleteEnvLetter(event,'inbox','${letter.id}')">
-                    <i class="fas fa-trash"></i>
-                </button>
             </div>
         </div>`;
     }).join('');
@@ -315,6 +307,36 @@ window.viewEnvLetter = function(section, id) {
             origCtx.style.display = 'none';
         }
     }
+    
+    // 获取按钮
+    const replyBtn = document.getElementById('env-view-reply-btn');
+    const deleteBtn = document.getElementById('env-view-delete-btn');
+    
+    // 显示按钮
+    if (replyBtn) replyBtn.style.display = '';
+    if (deleteBtn) deleteBtn.style.display = '';
+    
+    // 绑定回复事件（始终允许回复任何留言）
+    if (replyBtn) {
+        replyBtn.onclick = () => {
+            // 关闭当前详情窗，打开追加回复表单
+            closeEnvViewModal();
+            openReplyForm(id, section);
+        };
+    }
+    
+    // 绑定删除事件
+    if (deleteBtn) {
+        deleteBtn.onclick = () => {
+            const confirmed = confirm('确定要删除这条留言及其所有回复吗？');
+            if (confirmed) {
+                deleteEnvLetter(null, section, id);
+                closeEnvViewModal();
+                renderEnvelopeLists();
+            }
+        };
+    }    
+    
     showModal(document.getElementById('envelope-view-modal'));
 };
 
@@ -356,10 +378,10 @@ window.closeEnvViewModal = function() {
     hideModal(document.getElementById('envelope-view-modal'));
 };
 
-window.deleteEnvLetter = function(event, section, id) {
-    event.stopPropagation();
+    window.deleteEnvLetter = function(event, section, id) {
+    if (event) event.stopPropagation();
     if (!confirm('确定要删除这条留言及其所有回复吗？')) return;
-    
+
     // 递归删除函数
     function deleteWithChildren(parentId) {
     // 尝试从 outbox 删除
@@ -438,9 +460,10 @@ function handleSendEnvelope(parentId = null) {
         addMessage({ id: Date.now(), sender: 'user', text: `【留言板】\n${text}`, timestamp: new Date(), status: 'sent', type: 'normal' });
     }
 
-    const minHours = 6, maxHours = 12;
-    const randomHours = Math.random() * (maxHours - minHours) + minHours;
-    const replyTime = Date.now() + randomHours * 60 * 60 * 1000;
+    // 测试用：1~2 分钟
+    const minMinutes = 1, maxMinutes = 2;
+    const randomMinutes = Math.random() * (maxMinutes - minMinutes) + minMinutes;
+    const replyTime = Date.now() + randomMinutes * 60 * 1000;
     const newId = 'env_' + Date.now() + '_' + Math.random().toString(36).substr(2,4);
     
     const newMessage = {
@@ -484,11 +507,11 @@ function initAutoMessageBoard() {
 
 function scheduleAutoMessageBoard() {
     if (!settings || settings.messageBoardAutoEnabled !== true) return;
-    const minDelay = 4 * 60 * 60 * 1000;   // 4小时
-    const maxDelay = 6 * 60 * 60 * 1000;   // 6小时
+    const minDelay = 1 * 60 * 1000;   // 4小时
+    const maxDelay = 2 * 60 * 1000;   // 6小时
     const delay = minDelay + Math.random() * (maxDelay - minDelay);
     autoMessageBoardTimer = setTimeout(async () => {
-        if (settings.messageBoardAutoEnabled === true && Math.random() < 0.3) { // 30% 概率
+        if (settings.messageBoardAutoEnabled === true && Math.random() < 0.8) { // 30% 概率
             await addAutoMessageBoardEntry();
         }
         scheduleAutoMessageBoard();
