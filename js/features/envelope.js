@@ -10,7 +10,7 @@ async function loadEnvelopeData() {
     if (oldPending && envelopeData.outbox.length === 0) {
         envelopeData.outbox.push({
             id: 'legacy_' + Date.now(),
-            content: '（历史寄出的信件）',
+            content: '（历史寄出的留言）',
             sentTime: oldPending.sentTime,
             replyTime: oldPending.replyTime,
             status: 'pending'
@@ -32,9 +32,8 @@ async function checkEnvelopeStatus() {
     envelopeData.outbox.forEach(letter => {
         if (letter.status === 'pending' && now >= letter.replyTime) {
             letter.status = 'replied';
-            // 在 letter.status = 'replied'; 后面添加
-            letter.replyContent = replyContent;
             const replyContent = generateEnvelopeReplyText();
+            letter.replyContent = replyContent;
             const replyId = 'reply_' + Date.now() + '_' + Math.random().toString(36).substr(2,4);
             const inboxLetter = {
                 id: replyId,
@@ -67,8 +66,8 @@ function showEnvelopeReplyPopup(letter) {
         <div style="display:flex;align-items:center;gap:10px;">
             <span style="font-size:26px;">💌</span>
             <div>
-                <div style="font-size:14px;font-weight:700;color:var(--text-primary);">收到了一封回信</div>
-                <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;opacity:0.8;">Ta 给你写了回信，快去看看吧~</div>
+                <div style="font-size:14px;font-weight:700;color:var(--text-primary);">收到了一条回复</div>
+                <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;opacity:0.8;">Ta 给你写了回复，快去看看吧~</div>
             </div>
         </div>
         <div style="display:flex;gap:8px;">
@@ -84,6 +83,7 @@ const APPEARANCE_PANEL_TITLES = {
     'bubble': '气泡样式', 'avatar': '聊天头像', 'css': '自定义CSS',
     'font-bg': '背景 & 字体', 'bubble-css': '气泡 & CSS'
 };
+
 window.showAppearancePanel = function(panel) {
     const panelMap = {
         'font-bg': ['font', 'background'],
@@ -108,6 +108,7 @@ window.showAppearancePanel = function(panel) {
     }
     if (panel === 'bubble' || panel === 'bubble-css') { setTimeout(() => { if (typeof window.updateBubblePreviewFn === 'function') window.updateBubblePreviewFn(); }, 50); }
 };
+
 window.hideAppearancePanel = function() {
     document.getElementById('appearance-nav-grid').style.display = 'grid';
     document.getElementById('appearance-panel-container').style.display = 'none';
@@ -141,7 +142,6 @@ function generateEnvelopeReplyText() {
     return replyContent;
 }
 
-
 window.switchEnvTab = function(tab) {
     currentEnvTab = tab;
     document.getElementById('env-tab-outbox').classList.toggle('active', tab === 'outbox');
@@ -167,16 +167,16 @@ function renderEnvelopeLists() {
 }
 
 function renderOutboxList() {
-     const list = document.getElementById('env-outbox-list');
-     if (!list) return;
-     if (envelopeData.outbox.length === 0) {
-         list.innerHTML = `<div class="env-empty">
-             <i class="fa fa-envelope-o text-6xl text-gray-200 mb-6"></i>
-             <div style="font-size:18px;font-weight:500;margin-top:4px;color:var(--text-secondary);">还没有发送留言</div>
-             <div style="font-size:14px;margin-top:6px;opacity:0.6;color:var(--text-secondary);">提笔写下给Ta的留言吧~</div>
-         </div>`;
-         return;
-     }
+    const list = document.getElementById('env-outbox-list');
+    if (!list) return;
+    if (envelopeData.outbox.length === 0) {
+        list.innerHTML = `<div class="env-empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
+            <div style="font-size:14px;font-weight:500;margin-top:4px;">还没有发送留言</div>
+            <div style="font-size:12px;margin-top:6px;opacity:0.6;">提笔写下给Ta的留言吧~</div>
+        </div>`;
+        return;
+    }
     list.innerHTML = envelopeData.outbox.slice().reverse().map(letter => {
         const date = new Date(letter.sentTime).toLocaleDateString('zh-CN', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
         const isPending = letter.status === 'pending';
@@ -184,7 +184,7 @@ function renderOutboxList() {
         const statusIcon = isPending
             ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
             : `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
-        const statusText = isPending ? `${statusIcon} 预计 ${replyTime} 回信` : `${statusIcon} 已收到回信`;
+        const statusText = isPending ? `${statusIcon} 预计 ${replyTime} 回复` : `${statusIcon} 已收到回复`;
         const preview = letter.content.length > 38 ? letter.content.substring(0, 38) + '…' : letter.content;
         return `
         <div class="env-letter-item" onclick="viewEnvLetter('outbox','${letter.id}')">
@@ -209,16 +209,16 @@ function renderOutboxList() {
 }
 
 function renderInboxList() {
-     const list = document.getElementById('env-inbox-list');
-     if (!list) return;
-     if (envelopeData.inbox.length === 0) {
-         list.innerHTML = `<div class="env-empty">
-             <i class="fa fa-envelope-o text-6xl text-gray-200 mb-6"></i>
-             <div style="font-size:18px;font-weight:500;margin-top:4px;color:var(--text-secondary);">还没有收到留言</div>
-             <div style="font-size:14px;margin-top:6px;opacity:0.6;color:var(--text-secondary);">对方正在认真回复中，请稍候~</div>
-         </div>`;
-         return;
-     }
+    const list = document.getElementById('env-inbox-list');
+    if (!list) return;
+    if (envelopeData.inbox.length === 0) {
+        list.innerHTML = `<div class="env-empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/><polyline points="22 13 12 13"/><path d="M19 16l-5-3-5 3"/></svg>
+            <div style="font-size:14px;font-weight:500;margin-top:4px;">还没有收到留言</div>
+            <div style="font-size:12px;margin-top:6px;opacity:0.6;">对方正在认真回复中，请稍候~</div>
+        </div>`;
+        return;
+    }
     list.innerHTML = envelopeData.inbox.slice().reverse().map(letter => {
         const date = new Date(letter.receivedTime).toLocaleDateString('zh-CN', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
         const preview = letter.content.length > 50 ? letter.content.substring(0, 50) + '…' : letter.content;
@@ -236,7 +236,7 @@ function renderInboxList() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 </div>
             </div>
-            ${origPreview ? `<div style="padding:6px 12px 0;display:flex;align-items:flex-start;gap:6px;"><div style="width:2px;border-radius:2px;background:rgba(var(--accent-color-rgb),0.4);flex-shrink:0;align-self:stretch;min-height:14px;margin-top:1px;"></div><div style="font-size:11px;color:var(--text-secondary);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 14px);opacity:0.75;">原信: ${origPreview}</div></div>` : ''}
+            ${origPreview ? `<div style="padding:6px 12px 0;display:flex;align-items:flex-start;gap:6px;"><div style="width:2px;border-radius:2px;background:rgba(var(--accent-color-rgb),0.4);flex-shrink:0;align-self:stretch;min-height:14px;margin-top:1px;"></div><div style="font-size:11px;color:var(--text-secondary);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 14px);opacity:0.75;">原留言: ${origPreview}</div></div>` : ''}
             <div class="env-letter-body">
                 <div class="env-letter-preview">${preview}</div>
             </div>
@@ -261,55 +261,74 @@ window.viewEnvLetter = function(section, id) {
     editingEnvId = id;
     editingEnvSection = section;
     
-    // 格式化日期
-    const dateObj = letter.sentTime ? new Date(letter.sentTime) : new Date();
+    // 标题
+    document.getElementById('env-view-title').textContent = '留言详情';
+    
+    // 日期格式化
+    const dateObj = letter.sentTime ? new Date(letter.sentTime) : new Date(letter.receivedTime);
     const y = dateObj.getFullYear();
     const mo = String(dateObj.getMonth()+1).padStart(2,'0');
     const d = String(dateObj.getDate()).padStart(2,'0');
     const weekdays = ['日','一','二','三','四','五','六'];
     const fullDateStr = `${y}年${mo}月${d}日 星期${weekdays[dateObj.getDay()]}`;
     
-    // 设置日期
+    document.getElementById('env-view-stamp-date').textContent = `${mo}/${d}`;
     document.getElementById('env-view-date-line').textContent = fullDateStr;
+    document.getElementById('env-view-sign-date').textContent = fullDateStr;
     
-    // 设置我的留言内容
-    const myContent = section === 'outbox' ? letter.content : letter.originalContent;
-    document.getElementById('env-view-text').textContent = myContent;
-    document.getElementById('env-edit-input').value = myContent;
-    
-    // 显示/隐藏对方回复
-    const partnerReplySection = document.getElementById('partner-reply-section');
-    const partnerReplyText = document.getElementById('partner-reply-text');
-    const waitingSection = document.getElementById('waiting-reply-section');
+    // 内容显示逻辑
+    const contentEl = document.getElementById('env-view-text');
+    const toLine = document.getElementById('env-view-to-line');
+    const greetingLine = document.getElementById('env-view-greeting-line');
+    const signName = document.getElementById('env-view-sign-name');
     const continueBtn = document.getElementById('continue-reply-btn');
-    
-    if (section === 'outbox' && letter.status === 'pending') {
-        // 等待回复状态
-        partnerReplySection.style.display = 'none';
-        waitingSection.style.display = 'flex';
-        continueBtn.style.display = 'none';
-    } else {
-        // 已回复状态
-        waitingSection.style.display = 'none';
-        partnerReplySection.style.display = 'block';
-        partnerReplyText.textContent = section === 'inbox' ? letter.content : letter.replyContent;
-        continueBtn.style.display = 'block';
-    }
-    
-    // 显示/隐藏我的回复
-    const myReplySection = document.getElementById('my-reply-section');
-    const myReplyText = document.getElementById('my-reply-text');
-    if (letter.myReply) {
-        myReplySection.style.display = 'block';
-        myReplyText.textContent = letter.myReply;
-    } else {
-        myReplySection.style.display = 'none';
-    }
+    const origCtx = document.getElementById('env-view-original-ctx');
+    const origText = document.getElementById('env-view-original-text');
+    const origExpand = document.getElementById('env-view-original-expand');
     
     // 重置编辑状态
     document.getElementById('env-view-content').style.display = 'block';
     document.getElementById('env-view-edit').style.display = 'none';
-    document.getElementById('edit-buttons').style.display = 'none';
+    document.getElementById('env-view-edit-btn').style.display = 'inline-flex';
+    document.getElementById('env-view-save-btn').style.display = 'none';
+    
+    if (section === 'outbox') {
+        // 我发送的留言
+        toLine.textContent = `致 ${(typeof settings !== 'undefined' && settings.partnerName) || '亲爱的'}：`;
+        greetingLine.textContent = '见字如面，望君安好。';
+        contentEl.textContent = letter.content;
+        signName.textContent = (typeof settings !== 'undefined' && settings.myName) || '你';
+        
+        // 显示/隐藏继续留言按钮
+        continueBtn.style.display = letter.status === 'replied' ? 'inline-flex' : 'none';
+        
+        // 隐藏原信区域
+        origCtx.style.display = 'none';
+    } else {
+        // 收到的留言（包括对方主动留言和回复）
+        toLine.textContent = `致 ${(typeof settings !== 'undefined' && settings.myName) || '你'}：`;
+        greetingLine.textContent = '见字如面，一切皆好。';
+        contentEl.textContent = letter.content;
+        signName.textContent = (typeof settings !== 'undefined' && settings.partnerName) || '对方';
+        
+        // 收到的留言总是显示继续留言按钮
+        continueBtn.style.display = 'inline-flex';
+        
+        // 显示原信（如果是回复我的留言）
+        if (letter.originalContent) {
+            origText.textContent = letter.originalContent;
+            origText.style.maxHeight = '80px';
+            origCtx.style.display = 'block';
+            origExpand.style.display = letter.originalContent.length > 120 ? 'block' : 'none';
+            origExpand.textContent = '展开查看全文';
+        } else {
+            // 对方主动留言，没有原信
+            origCtx.style.display = 'none';
+        }
+    }
+    
+    // 设置编辑框内容
+    document.getElementById('env-edit-input').value = letter.content;
     
     showModal(document.getElementById('envelope-view-modal'));
 };
@@ -319,17 +338,21 @@ window.toggleEnvEdit = function() {
     const editEl = document.getElementById('env-view-edit');
     const editBtn = document.getElementById('env-view-edit-btn');
     const saveBtn = document.getElementById('env-view-save-btn');
+    const continueBtn = document.getElementById('continue-reply-btn');
+    
     const isEditing = editEl.style.display !== 'none';
     if (isEditing) {
         contentEl.style.display = 'block';
         editEl.style.display = 'none';
         editBtn.textContent = '编辑';
         saveBtn.style.display = 'none';
+        continueBtn.style.display = 'inline-flex';
     } else {
         contentEl.style.display = 'none';
         editEl.style.display = 'block';
         editBtn.textContent = '取消';
         saveBtn.style.display = 'inline-flex';
+        continueBtn.style.display = 'none';
     }
 };
 
@@ -354,9 +377,11 @@ window.closeEnvViewModal = function() {
 
 window.deleteEnvLetter = function(event, section, id) {
     event.stopPropagation();
-    if (!confirm('确定要删除这封信吗？')) return;
+    if (!confirm('确定要删除这条留言吗？')) return;
     if (section === 'outbox') {
         envelopeData.outbox = envelopeData.outbox.filter(l => l.id !== id);
+        // 同时删除对应的收件箱消息
+        envelopeData.inbox = envelopeData.inbox.filter(l => l.refId !== id);
     } else {
         envelopeData.inbox = envelopeData.inbox.filter(l => l.id !== id);
     }
@@ -369,7 +394,7 @@ window.openNewEnvelopeForm = function() {
     document.getElementById('env-outbox-section').style.display = 'none';
     document.getElementById('env-inbox-section').style.display = 'none';
     document.getElementById('env-main-close-btn').style.display = 'none';
-    document.getElementById('env-compose-title').textContent = '写一封信';
+    document.getElementById('env-compose-title').textContent = '写留言';
     document.getElementById('envelope-input').value = '';
     document.getElementById('env-send-to-chat').checked = false;
     document.getElementById('env-compose-form').style.display = 'block';
@@ -387,13 +412,11 @@ window.cancelEnvelopeCompose = function() {
 
 function handleSendEnvelope() {
     const text = document.getElementById('envelope-input').value.trim();
-    if (!text) { showNotification('信件内容不能为空', 'warning'); return; }
-
+    if (!text) { showNotification('留言内容不能为空', 'warning'); return; }
     const sendToChat = document.getElementById('env-send-to-chat').checked;
     if (sendToChat) {
-        addMessage({ id: Date.now(), sender: 'user', text: `【寄出的信】\n${text}`, timestamp: new Date(), status: 'sent', type: 'normal' });
+        addMessage({ id: Date.now(), sender: 'user', text: `【寄出的留言】\n${text}`, timestamp: new Date(), status: 'sent', type: 'normal' });
     }
-
     const minHours = 10, maxHours = 24;
     const randomHours = Math.random() * (maxHours - minHours) + minHours;
     const replyTime = Date.now() + randomHours * 60 * 60 * 1000;
@@ -404,61 +427,41 @@ function handleSendEnvelope() {
         status: 'pending'
     });
     saveEnvelopeData();
-
     cancelEnvelopeCompose();
     switchEnvTab('outbox');
-    showNotification(`信件已寄出，预计 ${Math.floor(randomHours)} 小时后收到回信 ✉️`, 'success');
+    showNotification(`留言已发送，预计 ${Math.floor(randomHours)} 小时后收到回复 ✉️`, 'success');
 }
 
-// 追加回复功能
+// 继续留言功能
 window.openContinueReplyForm = function() {
-    const letter = envelopeData.outbox.find(l => l.id === editingEnvId);
-    if (!letter) return;
-    
     const reply = prompt('请输入你的回复：');
     if (reply && reply.trim()) {
-        letter.myReply = reply.trim();
+        // 发送新的留言
+        const minHours = 10, maxHours = 24;
+        const randomHours = Math.random() * (maxHours - minHours) + minHours;
+        const replyTime = Date.now() + randomHours * 60 * 60 * 1000;
+        const newId = 'env_' + Date.now() + '_' + Math.random().toString(36).substr(2,4);
+        
+        envelopeData.outbox.push({
+            id: newId, 
+            content: reply.trim(),
+            sentTime: Date.now(), 
+            replyTime,
+            status: 'pending'
+        });
+        
         saveEnvelopeData();
-        viewEnvLetter('outbox', editingEnvId);
-        showNotification('回复已发送', 'success');
+        closeEnvViewModal();
+        switchEnvTab('outbox');
+        showNotification(`留言已发送，预计 ${Math.floor(randomHours)} 小时后收到回复 ✉️`, 'success');
     }
 };
 
-// 删除当前留言
-window.deleteCurrentMessage = function() {
-    if (!confirm('确定要删除这条留言吗？')) return;
-    
-    if (editingEnvSection === 'outbox') {
-        envelopeData.outbox = envelopeData.outbox.filter(l => l.id !== editingEnvId);
-        // 同时删除对应的收件箱消息
-        envelopeData.inbox = envelopeData.inbox.filter(l => l.refId !== editingEnvId);
-    } else {
-        envelopeData.inbox = envelopeData.inbox.filter(l => l.id !== editingEnvId);
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 绑定发送按钮事件
+    const sendBtn = document.getElementById('send-envelope');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', handleSendEnvelope);
     }
-    
-    saveEnvelopeData();
-    renderEnvelopeLists();
-    closeEnvViewModal();
-    showNotification('已删除', 'success');
-};
-
-// 修改编辑切换函数
-window.toggleEnvEdit = function() {
-    const contentEl = document.getElementById('env-view-content');
-    const editEl = document.getElementById('env-view-edit');
-    const editButtons = document.getElementById('edit-buttons');
-    const continueBtn = document.getElementById('continue-reply-btn');
-    
-    const isEditing = editEl.style.display !== 'none';
-    if (isEditing) {
-        contentEl.style.display = 'block';
-        editEl.style.display = 'none';
-        editButtons.style.display = 'none';
-        continueBtn.style.display = 'block';
-    } else {
-        contentEl.style.display = 'none';
-        editEl.style.display = 'block';
-        editButtons.style.display = 'flex';
-        continueBtn.style.display = 'none';
-    }
-};
+});
