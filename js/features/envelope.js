@@ -313,6 +313,15 @@ window.viewEnvLetter = function(section, id) {
         `;
     }
     
+    if (letter.replyTo) {
+        const original = envelopeData.outbox.find(l => l.id === letter.replyTo);
+        if (original) {
+            bodyHtml = `<div style="background:var(--primary-bg); padding:6px 10px; font-size:11px; color:var(--text-secondary); margin-bottom:8px;">
+                ↳ 回复：${escapeHtml(original.content.substring(0,40))}...
+            </div>` + bodyHtml;
+        }
+    }
+    
     document.getElementById('board-detail-body').innerHTML = bodyHtml;
     document.getElementById('board-edit-input').value = letter.content;
     
@@ -331,41 +340,44 @@ window.viewEnvLetter = function(section, id) {
     showModal(document.getElementById('board-detail-modal'));
 };
 
-window.toggleEnvEdit = function() {
-    const contentEl = document.getElementById('env-view-content');
-    const editEl = document.getElementById('env-view-edit');
-    const editBtn = document.getElementById('env-view-edit-btn');
-    const saveBtn = document.getElementById('env-view-save-btn');
-    const continueBtn = document.getElementById('continue-reply-btn');
-    
+window.toggleEnvEdit = function () {
+    const contentEl = document.getElementById('board-detail-body');
+    const editEl   = document.getElementById('board-edit-input');
+    const editBar   = document.getElementById('board-edit-actions-bar');
+
+    if (!editEl || !contentEl) return;
+
     const isEditing = editEl.style.display !== 'none';
     if (isEditing) {
-        contentEl.style.display = 'block';
         editEl.style.display = 'none';
-        editBtn.textContent = '编辑';
-        saveBtn.style.display = 'none';
-        continueBtn.style.display = 'inline-flex';
+        contentEl.style.display = '';
+        editBar.style.display = 'none';
+        document.getElementById('board-global-edit-btn').innerHTML = '<i class="fas fa-pen"></i>';
     } else {
-        contentEl.style.display = 'none';
+        // 填入当前内容
+        const origText = contentEl.innerText.trim();
+        editEl.value = origText;
         editEl.style.display = 'block';
-        editBtn.textContent = '取消';
-        saveBtn.style.display = 'inline-flex';
-        continueBtn.style.display = 'none';
+        contentEl.style.display = 'none';
+        editBar.style.display = 'flex';
+        document.getElementById('board-global-edit-btn').innerHTML = '<i class="fas fa-times"></i>';
     }
 };
 
-window.saveEnvEdit = function() {
-    const newContent = document.getElementById('env-edit-input').value.trim();
+window.saveEnvEdit = function () {
+    const editEl = document.getElementById('board-edit-input');
+    const newContent = editEl ? editEl.value.trim() : '';
     if (!newContent) { showNotification('内容不能为空', 'warning'); return; }
+
     const letters = editingEnvSection === 'outbox' ? envelopeData.outbox : envelopeData.inbox;
-    const letter = letters.find(l => l.id === editingEnvId);
+    const letter = letters.find(l => l.id == editingEnvId);
     if (letter) {
         letter.content = newContent;
         saveEnvelopeData();
-        const textEl = document.getElementById('env-view-text');
-        if (textEl) textEl.textContent = newContent;
+        // 直接更新详情页显示内容
+        document.getElementById('board-detail-body').innerHTML = escapeHtml(newContent);
         showNotification('已保存修改', 'success');
-        toggleEnvEdit();
+        toggleEnvEdit();  // 退出编辑态
     }
 };
 
@@ -419,11 +431,18 @@ function handleSendEnvelope() {
     const randomHours = Math.random() * (maxHours - minHours) + minHours;
     const replyTime = Date.now() + randomHours * 60 * 60 * 1000;
     const newId = 'env_' + Date.now() + '_' + Math.random().toString(36).substr(2,4);
-    envelopeData.outbox.push({
-        id: newId, content: text,
-        sentTime: Date.now(), replyTime,
-        status: 'pending'
-    });
+const newLetter = {
+    id: newId,
+    content: text,
+    sentTime: Date.now(),
+    replyTime: replyTime,
+    status: 'pending',
+    replyTo: window._continueReplyRef || null   // 关联原信
+};
+envelopeData.outbox.push(newLetter);
+// 用完后清除临时引用
+window._continueReplyRef = null;
+
     saveEnvelopeData();
     cancelEnvelopeCompose();
     switchEnvTab('outbox');
@@ -497,9 +516,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // 继续留言功能
-window.openContinueReplyForm = function() {
+window.openContinueReplyForm = function () {
+    // 保留当前正在查看的信件 ID
+    const currentId = editingEnvId;
     openNewEnvelopeForm();
     document.getElementById('env-compose-title').textContent = '继续留言';
+    
+    // 将原信件 ID 存入一个临时变量，供 handleSendEnvelope 使用
+    window._continueReplyRef = currentId;
 };
 
 // 关闭详情页
