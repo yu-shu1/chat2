@@ -261,76 +261,74 @@ window.viewEnvLetter = function(section, id) {
     editingEnvId = id;
     editingEnvSection = section;
     
-    // 标题
-    document.getElementById('env-view-title').textContent = '留言详情';
-    
-    // 日期格式化
-    const dateObj = letter.sentTime ? new Date(letter.sentTime) : new Date(letter.receivedTime);
+    const dateObj = letter.timestamp ? new Date(letter.timestamp) : new Date(letter.sentTime || letter.receivedTime);
     const y = dateObj.getFullYear();
     const mo = String(dateObj.getMonth()+1).padStart(2,'0');
     const d = String(dateObj.getDate()).padStart(2,'0');
+    const dateStr = `${y}/${mo}/${d}`;
     const weekdays = ['日','一','二','三','四','五','六'];
-    const fullDateStr = `${y}年${mo}月${d}日 星期${weekdays[dateObj.getDay()]}`;
+    const fullDateStr = dateStr + ' 星期' + weekdays[dateObj.getDay()];
     
-    document.getElementById('env-view-stamp-date').textContent = `${mo}/${d}`;
-    document.getElementById('env-view-date-line').textContent = fullDateStr;
-    document.getElementById('env-view-sign-date').textContent = fullDateStr;
+    document.getElementById('board-detail-date').textContent = fullDateStr;
     
-    // 内容显示逻辑
-    const contentEl = document.getElementById('env-view-text');
-    const toLine = document.getElementById('env-view-to-line');
-    const greetingLine = document.getElementById('env-view-greeting-line');
-    const signName = document.getElementById('env-view-sign-name');
-    const continueBtn = document.getElementById('continue-reply-btn');
-    const origCtx = document.getElementById('env-view-original-ctx');
-    const origText = document.getElementById('env-view-original-text');
-    const origExpand = document.getElementById('env-view-original-expand');
+    const myName = (typeof settings !== 'undefined' && settings.myName) || '我';
+    const partnerName = (typeof settings !== 'undefined' && settings.partnerName) || '对方';
     
-    // 重置编辑状态
-    document.getElementById('env-view-content').style.display = 'block';
-    document.getElementById('env-view-edit').style.display = 'none';
-    document.getElementById('env-view-edit-btn').style.display = 'inline-flex';
-    document.getElementById('env-view-save-btn').style.display = 'none';
+    let bodyHtml = '';
     
+    // 原留言部分
     if (section === 'outbox') {
-        // 我发送的留言
-        toLine.textContent = `致 ${(typeof settings !== 'undefined' && settings.partnerName) || '亲爱的'}：`;
-        greetingLine.textContent = '见字如面，望君安好。';
-        contentEl.textContent = letter.content;
-        signName.textContent = (typeof settings !== 'undefined' && settings.myName) || '你';
-        
-        // 显示/隐藏继续留言按钮
-        continueBtn.style.display = letter.status === 'replied' ? 'inline-flex' : 'none';
-        
-        // 隐藏原信区域
-        origCtx.style.display = 'none';
+        bodyHtml += `
+            <div class="board-user-section">
+                <div class="board-user-label">${myName} 的留言</div>
+                <div class="board-user-text">${escapeHtml(letter.content)}</div>
+            </div>
+        `;
     } else {
-        // 收到的留言（包括对方主动留言和回复）
-        toLine.textContent = `致 ${(typeof settings !== 'undefined' && settings.myName) || '你'}：`;
-        greetingLine.textContent = '见字如面，一切皆好。';
-        contentEl.textContent = letter.content;
-        signName.textContent = (typeof settings !== 'undefined' && settings.partnerName) || '对方';
-        
-        // 收到的留言总是显示继续留言按钮
-        continueBtn.style.display = 'inline-flex';
-        
-        // 显示原信（如果是回复我的留言）
+        // 收到的留言显示原信
         if (letter.originalContent) {
-            origText.textContent = letter.originalContent;
-            origText.style.maxHeight = '80px';
-            origCtx.style.display = 'block';
-            origExpand.style.display = letter.originalContent.length > 120 ? 'block' : 'none';
-            origExpand.textContent = '展开查看全文';
-        } else {
-            // 对方主动留言，没有原信
-            origCtx.style.display = 'none';
+            bodyHtml += `
+                <div class="board-user-section">
+                    <div class="board-user-label">${myName} 的原留言</div>
+                    <div class="board-user-text">${escapeHtml(letter.originalContent)}</div>
+                </div>
+                <hr class="board-divider">
+            `;
         }
+        bodyHtml += `
+            <div class="board-reply-section">
+                <div class="board-reply-label">${partnerName} 的回复</div>
+                <div class="board-reply-text">${escapeHtml(letter.content)}</div>
+            </div>
+        `;
     }
     
-    // 设置编辑框内容
-    document.getElementById('env-edit-input').value = letter.content;
+    // 等待回复提示
+    if (section === 'outbox' && letter.status === 'pending') {
+        bodyHtml += `
+            <div class="board-waiting-reply">
+                <i class="fas fa-hourglass-half"></i>
+                等待回复中...
+            </div>
+        `;
+    }
     
-    showModal(document.getElementById('envelope-view-modal'));
+    document.getElementById('board-detail-body').innerHTML = bodyHtml;
+    document.getElementById('board-edit-input').value = letter.content;
+    
+    // 隐藏编辑状态
+    document.getElementById('board-edit-actions-bar').style.display = 'none';
+    
+    // 显示/隐藏继续留言按钮
+    const continueBtn = document.getElementById('continue-reply-btn');
+    if (section === 'outbox' && letter.status === 'replied') {
+        continueBtn.style.display = 'inline-flex';
+    } else {
+        continueBtn.style.display = 'none';
+    }
+    
+    hideModal(document.getElementById('envelope-modal'));
+    showModal(document.getElementById('board-detail-modal'));
 };
 
 window.toggleEnvEdit = function() {
@@ -465,3 +463,68 @@ document.addEventListener('DOMContentLoaded', function() {
         sendBtn.addEventListener('click', handleSendEnvelope);
     }
 });
+
+// 绑定留言详情页事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 返回按钮
+    document.getElementById('board-detail-back-btn').addEventListener('click', function() {
+        hideModal(document.getElementById('board-detail-modal'));
+        showModal(document.getElementById('envelope-modal'));
+    });
+    
+    // 编辑按钮
+    document.getElementById('board-global-edit-btn').addEventListener('click', function() {
+        toggleEnvEdit();
+    });
+    
+    // 删除按钮
+    document.getElementById('board-delete-thread-btn').addEventListener('click', function() {
+        if (confirm('确定要删除这条留言吗？')) {
+            deleteEnvLetter(event, editingEnvSection, editingEnvId);
+            closeEnvViewModal();
+        }
+    });
+    
+    // 取消编辑
+    document.getElementById('board-edit-cancel-btn').addEventListener('click', function() {
+        toggleEnvEdit();
+    });
+    
+    // 保存编辑
+    document.getElementById('board-edit-save-btn').addEventListener('click', function() {
+        saveEnvEdit();
+    });
+});
+
+// 继续留言功能
+window.openContinueReplyForm = function() {
+    openNewEnvelopeForm();
+    document.getElementById('env-compose-title').textContent = '继续留言';
+};
+
+// 关闭详情页
+window.closeEnvViewModal = function() {
+    hideModal(document.getElementById('board-detail-modal'));
+};
+
+// 切换编辑状态
+window.toggleEnvEdit = function() {
+    const editBar = document.getElementById('board-edit-actions-bar');
+    const isEditing = editBar.style.display === 'flex';
+    
+    if (isEditing) {
+        editBar.style.display = 'none';
+        document.getElementById('board-global-edit-btn').innerHTML = '<i class="fas fa-pen"></i>';
+    } else {
+        editBar.style.display = 'flex';
+        document.getElementById('board-global-edit-btn').innerHTML = '<i class="fas fa-times"></i>';
+    }
+};
+
+// 工具函数：转义HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
