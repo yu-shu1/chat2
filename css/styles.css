@@ -10944,6 +10944,217 @@
             outline: none;
         }
         
+        /* 留言详情页样式 */
+.board-detail-wrapper {
+    background: var(--secondary-bg);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+.board-detail-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.board-detail-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+.board-detail-back:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+.board-detail-title {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.board-detail-actions {
+    display: flex;
+    gap: 6px;
+}
+.board-detail-action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+.board-detail-action-btn:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+.board-detail-action-btn.delete:hover {
+    background: rgba(255, 71, 87, 0.1);
+    color: #ff4757;
+    border-color: rgba(255, 71, 87, 0.3);
+}
+.board-paper {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    background-color: var(--primary-bg);
+    background-image: repeating-linear-gradient(
+        transparent, transparent 30px,
+        rgba(var(--accent-color-rgb), 0.07) 30px,
+        rgba(var(--accent-color-rgb), 0.07) 31px
+    );
+}
+.board-paper-top-line {
+    height: 5px;
+    background: var(--accent-color);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+.board-paper-content {
+    padding: 24px 24px 40px;
+    min-height: 200px;
+}
+.board-user-section, .board-reply-section {
+    position: relative;
+}
+.board-user-label, .board-reply-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.board-user-label {
+    color: var(--accent-color);
+}
+.board-reply-label {
+    color: var(--text-secondary);
+}
+.board-user-label::after, .board-reply-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(var(--accent-color-rgb), 0.4), transparent);
+}
+.board-user-text, .board-reply-text {
+    font-size: 15px;
+    line-height: 31px;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 31px;
+    padding-left: 40px;
+    position: relative;
+}
+.board-user-text::before, .board-reply-text::before {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: 4px;
+    bottom: 4px;
+    width: 1px;
+    background: rgba(220, 80, 80, 0.2);
+}
+.board-user-text.editing, .board-reply-text.editing {
+    background: rgba(var(--accent-color-rgb), 0.05);
+    border: 1.5px solid rgba(var(--accent-color-rgb), 0.3);
+    border-radius: 8px;
+    padding: 8px 12px 8px 44px;
+    outline: none;
+    cursor: text;
+}
+.board-divider {
+    border: none;
+    border-top: 2px dashed rgba(var(--accent-color-rgb), 0.35);
+    margin: 24px 0;
+    position: relative;
+    height: 0;
+}
+.board-divider-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--primary-bg);
+    padding: 2px 10px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+.board-waiting-reply {
+    padding: 24px 40px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-style: italic;
+    opacity: 0.5;
+}
+.board-waiting-reply i {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 8px;
+    opacity: 0.4;
+}
+.board-detail-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+    opacity: 0.5;
+    margin-top: 20px;
+    text-align: right;
+    padding-right: 40px;
+}
+.board-compose-btn {
+    padding: 10px 22px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-family);
+}
+.board-compose-btn.send {
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 14px rgba(var(--accent-color-rgb), 0.3);
+}
+.board-compose-btn.send:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+.board-compose-btn.cancel {
+    background: var(--message-received-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+.board-compose-btn.cancel:hover {
+    background: var(--border-color);
+}
+        
 /* 隐藏群聊按钮 */
 #group-chat-btn {
     display: none !important;
